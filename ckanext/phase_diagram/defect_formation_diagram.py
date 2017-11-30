@@ -1,10 +1,7 @@
-from itertools import combinations
-
 import numpy as np
-from numpy.linalg import LinAlgError
 
 import vector_helpers
-from vector_helpers import intersection
+
 
 class DefectFormationEnergyDiagram(object):
   def __init__(self, data, chemical_potentials, charges, fermi_energy_bounds):

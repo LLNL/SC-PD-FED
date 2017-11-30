@@ -2,9 +2,9 @@
 
 from logging import getLogger
 
-from ckan.common import json, config
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
+from ckan.common import json
 from flask import jsonify
 
 import phase_diagram
