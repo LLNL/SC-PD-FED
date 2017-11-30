@@ -162,13 +162,13 @@ def datastore_fields(resource, valid_field_types):
           if f['type'] in valid_field_types]
 
 
-class SemiconductorStabilityPhaseDiagramView(p.SingletonPlugin):
+class PhaseDiagramPlugin(p.SingletonPlugin):
   '''
   This base class for the Recline view extensions.
   '''
   p.implements(p.IConfigurer, inherit=True)
   p.implements(p.IResourceView, inherit=True)
-  p.implements(p.ITemplateHelpers, inherit=True)
+  #p.implements(p.ITemplateHelpers, inherit=True)
   p.implements(p.IActions)
 
   def update_config(self, config):
