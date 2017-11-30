@@ -1,5 +1,7 @@
 """Stability diagram for HydroGEN project.
+Peggy Li
 
+Data from:
 Pohl, Johan, and Karsten Albe. "Intrinsic point defects in CuInSe 2 and CuGaSe
 2 as seen via screened-exchange hybrid density functional theory." Physical
 Review B 87.24 (2013): 245203.
@@ -41,10 +43,8 @@ class Compound(object):
       return 0
 
   @staticmethod
-  def from_string(s):
+  def parse_string_to_dict(c):
     pattern = re.compile(r'([A-Z][a-z]*)([0-9]*)')
-    c, h = s.split(" ")
-    h = float(h)
     element_nums = pattern.findall(c)
     d = OrderedDict()
     for ele, num in element_nums:
@@ -53,6 +53,19 @@ class Compound(object):
       else:
         num = int(num)
       d[ele] = num
+    return d
+
+  @staticmethod
+  def from_list(l):
+    """list/tuple like ["CuInSe2", 0.6]"""
+    d = Compound.parse_string_to_dict(l[0])
+    return Compound(d, l[1])
+
+  @staticmethod
+  def from_string(s):
+    c, h = s.split(" ")
+    h = float(h)
+    d = Compound.parse_string_to_dict(c)
     return Compound(d, h)
 
   def __repr__(self):
@@ -209,7 +222,9 @@ class StabilityDiagram(object):
 ####################################
 def parse_compounds(compounds):
   """
-  Returns list of Compounds. Can accept list of dicts like {"Cu": 1, "In": 1, "Se": 2, "dHf": -2.37} or strings "CuInSe2 -2.37"
+  Returns list of Compounds. Can accept list of dicts like {"Cu": 1, "In": 1, "Se": 2, "dHf": -2.37}
+  or list of strings "CuInSe2 -2.37"
+  or lists of tuples like [("CuInSe2", -2,37)]
   :param compounds:
   :type compounds: List[OrderedDict] or List[str]
   """
@@ -217,8 +232,10 @@ def parse_compounds(compounds):
   if isinstance(compounds[0], str):
     for c in compounds:
       compound_list.append(Compound.from_string(c))
+  elif isinstance(compounds[0], tuple) or isinstance(compounds[0], list):
+    for c in compounds:
+      compound_list.append(Compound.from_list(c))
   else:
-    # TODO: change to list of tuples? no dict?
     for c in compounds:
       h = float(c["dHf"])
       del c["dHf"]

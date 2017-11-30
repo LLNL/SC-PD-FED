@@ -3,10 +3,12 @@
 {% block page %}
 
 <!-- data-module references resource config I think -->
-  <div data-module="main_view"
+  <div data-module="stability_phase_diagram_view"
        data-module-site_url="{{ h.dump_json(h.url('/', locale='default', qualified=true)) }}"
-       data-module-resource = "{{ h.dump_json(resource_json) }}";
-       data-module-resource-view = "{{ h.dump_json(resource_view_json) }}";
+       data-module-pd-resource-id = "{{ pd_resource.id }}"
+       data-module-dfe-resource-id = "{{ dfe_resource.id }}"
+       data-module-resource = "{{ h.dump_json(resource_json) }}"
+       data-module-resource-view = "{{ h.dump_json(resource_view_json) }}"
        >
     <h4 class="loading-dialog">
       <div class="loading-spinner"></div>

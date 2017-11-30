@@ -3,11 +3,13 @@
 
 var self = this;
 
-this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoints) {
+this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, data) {
     console.log("DFEDiagram constructor");
     this.svg_div = svg_div;
     this.chemical_potential = chemical_potentials_coords;
     this.endpoint = endpoint;
+    data["resource_id"] = data["dfe_resource_id"];
+    this.query_data = data;
 
     var defaults = {
         "height": 500,
@@ -39,15 +41,14 @@ DFEDiagram.prototype.init = function() {
     // TODO: jquery proxy?
    // setup_graph.call(this);
     // Get region data
-    var endpoint = this.endpoint;
     $.ajax({
         context: this,
         type: "GET",
         contentType: "application/json",
         dataType: "json",
-        url: endpoint,
+        url: this.endpoint,
         async: true,
-        data: this.chemical_potential,
+        data: $.extend({}, this.chemical_potential, this.query_data),
         success: function(data) {
             setup_graph.call(this, data);
             drawLines.call(this, data);
@@ -59,16 +60,15 @@ DFEDiagram.prototype.init = function() {
 };
 
 DFEDiagram.prototype.update = function(coords) {
-    this.chemical_potential = {"x": coords[0], "y": coords[1]}
-
+    this.chemical_potential = {"x": coords[0], "y": coords[1]};
     $.ajax({
         context: this,
         type: "GET",
         contentType: "application/json",
         dataType: "json",
-        url: "/dfe",
+        url: this.endpoint,
         async: true,
-        data: this.chemical_potential,
+        data: $.extend({}, this.chemical_potential, this.query_data),
         success: drawLines,
         error: function(result){
             console.log("Ajax error: ", result)

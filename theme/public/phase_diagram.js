@@ -3,11 +3,14 @@
 
 var self = this;
 
-this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint) {
+this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint, dfe_endpoint, data) {
     console.log("phase diagram func");
     this.svg_div = phase_diagram_div;
     this.dfe_svg_div = dfe_div;
     this.endpoint = endpoint;
+    this.dfe_endpoint = dfe_endpoint;
+    data["resource_id"] = data["pd_resource_id"];
+    this.query_data = data;
 
     var defaults = {
         "height": 500,
@@ -25,16 +28,15 @@ PhaseDiagram.prototype.init = function() {
     // Get region data
     //var s = document.getElementsByName("formation_energy_data");
     //var data = {"fe_data": s};
-    var endpoint = this.endpoint;
     console.log("phasediagram init");
     $.ajax({
         context: this,
         type: "GET",
         contentType: "application/json",
         dataType: "json",
-        url: endpoint,
+        url: this.endpoint,
         async: true,
-        data: "{}",//data,
+        data: this.query_data,
         success: setup,
         error: function(result){
             console.log("Ajax error: ", result)
@@ -69,7 +71,7 @@ function setup(data) {
         return feasible;
     }
 
-    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord);
+    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, this.dfe_endpoint, this.query_data);
     this.DFEDiagram.init();
 
     var margin = this.options.margin,

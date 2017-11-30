@@ -1,0 +1,6 @@
+*pyc
+tests/.cache/
+
+.idea/
+
+*.sw[opmn]
