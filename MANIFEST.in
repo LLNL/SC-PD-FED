@@ -1,0 +1,4 @@
+include README.rst
+include LICENSE
+include requirements.txt
+recursive-include ckanext/phase_diagram *.html *.json *.js *.less *.css *.mo

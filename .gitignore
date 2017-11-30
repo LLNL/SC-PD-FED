@@ -1,6 +1,8 @@
 *pyc
 tests/.cache/
 
+*.egg-info/
+
 .idea/
 
 *.sw[opmn]
