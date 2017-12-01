@@ -159,7 +159,7 @@ def datastore_fields(resource, valid_field_types):
     :type valid_field_types: list of strings
     '''
   data = {'resource_id': resource['id'], 'limit': 0}
-  fields = toolkit.get_action('datastore_search')({}, data)['fields']
+  fields = tk.get_action('datastore_search')({}, data)['fields']
   return [{'value': f['id'], 'text': f['id']} for f in fields
           if f['type'] in valid_field_types]
 
@@ -193,13 +193,13 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     name = name.split(" ", 1)[0]
     package = data_dict["package"]
     id_name = {r["name"]: r["id"] for r in package["resources"]}
-    pd_resource = id_name[name+"_pd_data.csv"]
-    dfe_resource = id_name[name+"_dfe_data.csv"]
+    pd_resource_id = id_name[name+"_pd_data.csv"]
+    dfe_resource_id = id_name[name+"_dfe_data.csv"]
     return {'resource_json': json.dumps(data_dict['resource']),
             'resource_view_json': json.dumps(data_dict['resource_view']),
             'resource': resource,
-            'pd_resource': pd_resource,
-            'dfe_resource': dfe_resource,
+            'pd_resource_id': pd_resource_id,
+            'dfe_resource_id': dfe_resource_id,
             'dataset_id': package['id']
             }
 

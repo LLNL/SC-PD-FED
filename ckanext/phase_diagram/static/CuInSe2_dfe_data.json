@@ -20,10 +20,3 @@
     "dfe_lim": [-0.7, 4]
   }
 }
- "what dont i need from this fucking json file.
-i need the dfe's that for sure.  can i make each entry in dfes one line in a csv file?
-Yes. I can. it would have 11 columns, which is fine and dandy.
-
-with the ehader, I wouldn't need 'charges'.
-what about the defaults?
-"
