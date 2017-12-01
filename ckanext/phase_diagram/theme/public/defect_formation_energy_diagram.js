@@ -3,13 +3,15 @@
 
 var self = this;
 
-this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, data) {
+this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, query_data, result_parser) {
     console.log("DFEDiagram constructor");
     this.svg_div = svg_div;
     this.chemical_potential = chemical_potentials_coords;
     this.endpoint = endpoint;
-    data["resource_id"] = data["dfe_resource_id"];
-    this.query_data = data;
+    if(query_data.dfe_resource_id)
+      query_data["resource_id"] = query_data["dfe_resource_id"];
+    this.query_data = query_data;
+    this.result_parser = result_parser;
 
     var defaults = {
         "height": 500,
@@ -50,6 +52,9 @@ DFEDiagram.prototype.init = function() {
         async: true,
         data: $.extend({}, this.chemical_potential, this.query_data),
         success: function(data) {
+            if(this.result_parser) {
+              data = this.result_parser(data);
+            }
             setup_graph.call(this, data);
             drawLines.call(this, data);
         },
@@ -69,7 +74,12 @@ DFEDiagram.prototype.update = function(coords) {
         url: this.endpoint,
         async: true,
         data: $.extend({}, this.chemical_potential, this.query_data),
-        success: drawLines,
+        success: function(data) {
+          if(this.result_parser) {
+            data = this.result_parser(data);
+          }
+          drawLines.call(this, data);
+        },
         error: function(result){
             console.log("Ajax error: ", result)
         }

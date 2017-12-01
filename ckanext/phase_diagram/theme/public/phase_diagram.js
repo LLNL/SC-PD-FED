@@ -3,14 +3,16 @@
 
 var self = this;
 
-this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint, dfe_endpoint, data) {
+this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint, dfe_endpoint, query_data, result_parser) {
     console.log("phase diagram func");
     this.svg_div = phase_diagram_div;
     this.dfe_svg_div = dfe_div;
     this.endpoint = endpoint;
     this.dfe_endpoint = dfe_endpoint;
-    data["resource_id"] = data["pd_resource_id"];
-    this.query_data = data;
+    if(query_data.pd_resource_id)
+      query_data["resource_id"] = query_data["pd_resource_id"];
+    this.query_data = query_data;
+    this.result_parser = result_parser;
 
     var defaults = {
         "height": 500,
@@ -37,7 +39,12 @@ PhaseDiagram.prototype.init = function() {
         url: this.endpoint,
         async: true,
         data: this.query_data,
-        success: setup,
+        success: function(data) {
+          if(this.result_parser) {
+            data = this.result_parser(data);
+          }
+          setup.call(this, data);
+        },
         error: function(result){
             console.log("Ajax error: ", result)
         }
@@ -71,7 +78,7 @@ function setup(data) {
         return feasible;
     }
 
-    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, this.dfe_endpoint, this.query_data);
+    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, this.dfe_endpoint, this.query_data, this.result_parser);
     this.DFEDiagram.init();
 
     var margin = this.options.margin,

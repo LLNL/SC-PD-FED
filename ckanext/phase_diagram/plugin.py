@@ -5,7 +5,6 @@ from logging import getLogger
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan.common import json
-from flask import jsonify
 
 import phase_diagram
 from defect_formation_diagram import DefectFormationEnergyDiagram
@@ -63,7 +62,7 @@ def phase_diagram_view(context, data_dict):
           "bounds": [[-3, 0], [-3, 0]],
           "default_coord": default_coord,
           }
-  return jsonify(data)
+  return data
 
 
 def _defect_fect_formation_diagram_view(context, data_dict):
@@ -99,7 +98,7 @@ def _defect_fect_formation_diagram_view(context, data_dict):
           "bounds": [fermi_energy_axis_lim, dfe_lim],
           "minor_bounds": [[0, 1], [0]],  # little gray lines
           }
-  return jsonify(data)
+  return data
 
 
 @tk.side_effect_free
@@ -129,7 +128,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
           "bounds": [fermi_energy_axis_lim, dfe_lim],
           "minor_bounds": [[0, 1], [0]],  # little gray lines
           }
-  return jsonify(data)
+  return data
 
 def in_list(list_possible_values):
   '''
