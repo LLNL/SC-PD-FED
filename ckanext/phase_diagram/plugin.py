@@ -16,6 +16,7 @@ natural_number_validator = p.toolkit.get_validator('natural_number_validator')
 Invalid = p.toolkit.Invalid
 
 
+@tk.side_effect_free
 def phase_diagram_view(context, data_dict):
   data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
   compounds = [
@@ -101,6 +102,7 @@ def _defect_fect_formation_diagram_view(context, data_dict):
   return jsonify(data)
 
 
+@tk.side_effect_free
 def defect_fect_formation_diagram_view(context, data_dict):
   #resource = tk.get_action("resource_show")(data_dict={"id": data_dict["resource_id"]})
   data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
