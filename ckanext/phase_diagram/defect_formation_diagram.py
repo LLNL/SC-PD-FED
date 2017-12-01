@@ -1,6 +1,8 @@
 import numpy as np
+from numpy.linalg import LinAlgError
 
 import vector_helpers
+import itertools
 
 
 class DefectFormationEnergyDiagram(object):
@@ -33,30 +35,57 @@ class DefectFormationEnergyDiagram(object):
     res = {}
     for name, coefs_dfes in self.data.iteritems():
       A, b = self.get_equations(coefs_dfes)
-      res[name] = self.find_lowest_points(A, b, self.fermi_energy_bounds)
+      res[name] = self.find_lowest_lines_points(A, b, self.fermi_energy_bounds)["points"]
     return res
 
-#  @staticmethod
-#  def fit_range(points, range):
-#    # points: {"defect_name": points} Dict of numpy arrays
-#    # Assumes points are sorted, like from find_lowest_points
-#    res = {}
-#    min, max = sorted(range)
-#    for name, points in points.iteritems():
-#      if points[0][1] > max or points[-1][1] < min:
-#        # If points are all outside range, empty array
-#        res[name] = np.array([])
-#      else:
-#        for i in range(len(points)):
-#          if points[i][1] >= min:
-#            break
-#          if i > 0:
-#            points = points[i-1:]
-#            # Consider the two points to get a slope
-#    stopsdfma
+  def find_intrinsic_fermi_level(self):
+    """Just find intersections of all pos and neg slope lines"""
+    # TODO: do some accessor/cache thing to save result of find_lowest_lines_points
+    lowest_points = {}
+    lowest_lines = {}
+    for name, coefs_dfes in self.data.iteritems():
+      A, b = self.get_equations(coefs_dfes)
+      r = self.find_lowest_lines_points(A, b, self.fermi_energy_bounds)
+      lowest_points[name] = r["points"]
+      lowest_lines[name] = r["lines"]
+
+    startx, endx = self.fermi_energy_bounds
+    pos = {}
+    neg = {}
+    pos_positions = [i for i, c in self.charges if c > 0]
+    neg_positions = [i for i, c in self.charges if c < 0]
+    for name, coefs_dfes in self.data.iteritems():
+      pos_coefs_dfes = [coefs_dfes[i] for i in pos_positions]
+      neg_coefs_dfes = [coefs_dfes[i] for i in neg_positions]
+      pA, pb = self.get_equations(pos_coefs_dfes)
+      nA, nb = self.get_equations(neg_coefs_dfes)
+      pos[name] = (pA, pb)
+      neg[name] = (nA, nb)
+    # Find intersections
+    intersections = []
+    pflat = [(name, eq) for name, value in pos.iteritems() for eq in value]
+    nflat = [(name, eq) for name, value in neg.iteritems() for eq in value]
+    for pos_neg in itertools.product(pflat, nflat):
+      ((pname, peq), (nname, neq)) = pos_neg
+      try:
+        i = vector_helpers.intersection(peq[0], peq[1], neq[0], neq[1])
+        # Is valid? Check if the intersection falls on the section that is 'lowest'
+        pcharge = peq[0][0]
+        ncharge = neq[0][0]
+        pcpos = lowest_lines.index(pcharge)
+        ncpos = lowest_lines.index(ncharge)
+        # in the right segments by x axis
+        good = lowest_points[pname][pcpos][0] <= i[0] <= lowest_points[pname][pcpos+1][1] and \
+          lowest_points[nname][ncpos][0] <= i[0] <= lowest_points[nname][ncpos+1][1]
+        if good:
+          intersections.append(i)
+      except LinAlgError:
+        continue
+    # Lowest intersection
+    return min(intersections, key=lambda i: i[1])
 
   @staticmethod
-  def find_lowest_points(A, b, domain):
+  def find_lowest_lines_points(A, b, domain):
     """Get np array of lowest points sorted by x"""
     # Ax=b
     # ASSUME NO LINES OF SAME SLOPE
@@ -72,6 +101,7 @@ class DefectFormationEnergyDiagram(object):
     min_eq = np.argmin(ys)
     cury = ys[min_eq]
     vertices = [np.array([curx, cury])]
+    lines = []
 
     while True:
       #other_inds = np.arange(A.shape[0]) != min_eq
@@ -99,6 +129,7 @@ class DefectFormationEnergyDiagram(object):
           minx = intersection[0]
           mini = i
       min_eq = mini
+      lines.append(mini)
       cur = curx, cury = intersections[min_eq]
       vertices.append(cur)
 
@@ -106,7 +137,8 @@ class DefectFormationEnergyDiagram(object):
       endy = c[min_eq] * endx + bb[min_eq]
       vertices.append(np.array([endx, endy]))
 
-    return np.array(vertices)
+    return {"points": np.array(vertices),
+    "lines": lines}
 
 
 if __name__ == "__main__":

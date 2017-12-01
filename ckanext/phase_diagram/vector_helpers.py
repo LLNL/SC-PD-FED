@@ -36,8 +36,15 @@ def an_intersection(v1, b1):
 
 
 def intersection(v1, b1, v2, b2):
+  # TODO: just let this raise LinAlgError or return None?
   a = np.array([v1, v2])
   b = np.array([b1, b2])
+  # solves ax=b
+  return np.linalg.solve(a,b)
+
+def intersection2(vs, bs):
+  a = np.array(vs)
+  b = np.array(bs)
   # solves ax=b
   return np.linalg.solve(a,b)
 

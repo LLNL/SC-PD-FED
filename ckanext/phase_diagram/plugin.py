@@ -125,10 +125,12 @@ def defect_fect_formation_diagram_view(context, data_dict):
 
   diagram = DefectFormationEnergyDiagram(dfes, chemical_potentials, charges, fermi_energy_lim)
   vert_dict = diagram.get_lowest_points()
+  ifl = diagram.find_intrinsic_fermi_level()
   lines = [{"label": k, "vertices": v.tolist()} for k, v in vert_dict.iteritems()]
   data = {"lines": lines,
           "bounds": [fermi_energy_axis_lim, dfe_lim],
           "minor_bounds": [[0, 1], [0]],  # little gray lines
+          "intrinsic_fermi_level": ifl, #[x, y]
           }
   return data
 
@@ -182,11 +184,6 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     tk.add_public_directory(config, 'theme/public')
     tk.add_template_directory(config, 'theme/templates')
     tk.add_resource('theme/public', 'ckanext-spdview')
-
-  # def can_view(self, data_dict):
-  #  resource = data_dict['resource']
-  #  return (resource.get('datastore_active') or
-  #          '_datastore_only_resource' in resource.get('url', ''))
 
   def setup_template_variables(self, context, data_dict):
     resource = data_dict["resource"]
