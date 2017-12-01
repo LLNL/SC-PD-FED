@@ -3,7 +3,7 @@
 
 var self = this;
 
-this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, query_data, result_parser) {
+this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, params, query_data, result_parser) {
     console.log("DFEDiagram constructor");
     this.svg_div = svg_div;
     this.chemical_potential = chemical_potentials_coords;
@@ -33,7 +33,16 @@ this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, query_
         "lightskyblue",
         "black",
     ];
-    this.options = defaults;
+    this.params = Object.assign({}, defaults, params);
+    if(params.margin_top !== undefined){
+        this.params.margin.top = params.margin_top;
+    }else if(params.margin_bottom !== undefined) {
+        this.params.margin.bottom = params.margin_bottom;
+    }else if(params.margin_right !== undefined) {
+        this.params.margin.right = params.margin_right;
+    }else if(params.margin_left !== undefined) {
+        this.params.margin.left = params.margin_left;
+    }
 
 };
 

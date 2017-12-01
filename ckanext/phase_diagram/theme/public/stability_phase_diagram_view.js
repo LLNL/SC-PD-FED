@@ -10,7 +10,9 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
 
         var data = {
           "pd_resource_id": this.options.pdResourceId,
-          "dfe_resource_id": this.options.dfeResourceId
+          "dfe_resource_id": this.options.dfeResourceId,
+          "pd_params": JSON.parse(this.options.pdParams),
+            "dfe_params": JSON.parse(this.options.dfeParams),
         };
         var phase_diagram = new PhaseDiagram(phase_div_id, dfe_div_id, pd_endpoint, dfe_endpoint, data, result_parser);
         phase_diagram.init();

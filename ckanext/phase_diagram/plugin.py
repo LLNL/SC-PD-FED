@@ -47,7 +47,7 @@ def phase_diagram_view(context, data_dict):
 
   compounds = phase_diagram.parse_compounds(compounds)
 
-  # TODO: have ["Cu", "In", "Se"] be passed in by request
+  # TODO: have ["Cu", "In", "Se"] , coords, be passed in by request
   cu_in_se_compounds = phase_diagram.select_compounds(compounds, ["Cu", "In", "Se"])
   CuInSe2 = compounds[0]
   lower_lims = [-3, -3]
@@ -55,9 +55,11 @@ def phase_diagram_view(context, data_dict):
 
   regions = sd.get_regions()
   regions = [{"formula": formula, "vertices": v.vertices.tolist()} for formula, v in regions.iteritems()]
-  default_coord = {"x": (lower_lims[0] - 0) / 2.0,
-                   "y": (lower_lims[1] - 0) / 2.0
-                   }
+  #default_coord = {"x": (lower_lims[0] - 0) / 2.0,
+  #                 "y": (lower_lims[1] - 0) / 2.0
+  #                 }
+  default_coord = {"x": -0.3,
+                   "y": -1}
   data = {"regions": regions,
           "bounds": [[-3, 0], [-3, 0]],
           "default_coord": default_coord,
@@ -199,6 +201,8 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             'resource': resource,
             'pd_resource_id': pd_resource_id,
             'dfe_resource_id': dfe_resource_id,
+            'pd_params': json.dumps({}),
+            'dfe_params': json.dumps({}),
             'dataset_id': package['id']
             }
 
