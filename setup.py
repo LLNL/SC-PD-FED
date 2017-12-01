@@ -80,7 +80,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points='''
         [ckan.plugins]
-        phase_diagram=ckanext.phase_diagram.plugin:Phase_DiagramPlugin
+        phase_diagram=ckanext.phase_diagram.plugin:PhaseDiagramPlugin
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan

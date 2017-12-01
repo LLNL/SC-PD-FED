@@ -187,15 +187,18 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
 
   def setup_template_variables(self, context, data_dict):
     resource = data_dict["resource"]
-    stop
-    pd_resource = 3434
-    dfe_resource = 10101
+    name = resource["name"]
+    name = name.split(" ", 1)[0]
+    package = data_dict["package"]
+    id_name = {r["name"]: r["id"] for r in package["resources"]}
+    pd_resource = id_name[name+"_pd_data.csv"]
+    dfe_resource = id_name[name+"_dfe_data.csv"]
     return {'resource_json': json.dumps(data_dict['resource']),
             'resource_view_json': json.dumps(data_dict['resource_view']),
             'resource': resource,
             'pd_resource': pd_resource,
             'dfe_resource': dfe_resource,
-            'dataset_id': resource.package_id,
+            'dataset_id': package['id']
             }
 
   def view_template(self, context, data_dict):
