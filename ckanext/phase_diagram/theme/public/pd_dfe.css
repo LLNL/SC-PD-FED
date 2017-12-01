@@ -1,6 +1,6 @@
 #pd-dfe > div {
     display: inline-block;
-    padding: 20px 20px;
+    margin: 20px 20px;
 }
 p {
 }
@@ -9,6 +9,6 @@ p {
     padding: 10px;
     z-index: 1000;
     position: absolute;
-    top: 15%;
-    right: 10%;
+    top: 13%;
+    right: 5%;
 }

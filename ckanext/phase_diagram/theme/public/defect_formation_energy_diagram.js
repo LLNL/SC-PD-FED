@@ -16,7 +16,6 @@ this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, params
     var defaults = {
         "height": 500,
         "width": 400,
-        "padding": 30,
         "margin": {top: 20, right: 30, bottom: 20, left: 30},
     };
 
@@ -33,7 +32,8 @@ this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, params
         "lightskyblue",
         "black",
     ];
-    this.params = Object.assign({}, defaults, params);
+    this._params = params
+    this.params = Object.assign({}, defaults, this._params.dfe_params);
     if(params.margin_top !== undefined){
         this.params.margin.top = params.margin_top;
     }else if(params.margin_bottom !== undefined) {
@@ -96,11 +96,11 @@ DFEDiagram.prototype.update = function(coords) {
 }
 
 function setup_graph(data) {
-    var margin = this.options.margin,
-        width = this.options['width'] - margin.left - margin.right,
-        height = this.options['height'] - margin.top - margin.bottom;
+    var margin = this.params.margin,
+        width = this.params['width'] - margin.left - margin.right,
+        height = this.params['height'] - margin.top - margin.bottom;
 
-    var padding = this.options['padding'];
+    var padding = this.params['padding'];
     this.bounds = data.bounds;
     this.xScale = d3.scaleLinear().domain([this.bounds[0][0], this.bounds[0][1]]).range([0, width]);
     this.yScale = d3.scaleLinear().domain([this.bounds[1][0], this.bounds[1][1]]).range([height, 0]);
@@ -141,7 +141,6 @@ function setup_graph(data) {
         .attr("points", function(d) {
             s = "" + _.xScale(d) + "," + 0 + " ";
             s += _.xScale(d) + "," + height;
-            console.log("xs", s);
             return s
         })
         .style("stroke", "gray");
@@ -152,7 +151,6 @@ function setup_graph(data) {
         .attr("points", function(d) {
             s = "0" + "," + _.yScale(d) + " ";
             s += width + "," + _.yScale(d);
-            console.log("ys", s);
             return s
         })
         .style("stroke", "gray")

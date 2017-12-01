@@ -4,7 +4,6 @@
 var self = this;
 
 this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint, dfe_endpoint, params, query_data, result_parser) {
-    console.log("phase diagram func");
     this.svg_div = phase_diagram_div;
     this.dfe_svg_div = dfe_div;
     this.endpoint = endpoint;
@@ -17,10 +16,10 @@ this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint, dfe_endpoint,
     var defaults = {
         "height": 500,
         "width": 500,
-        "padding": 30,
         "margin": {top: 20, right: 30, bottom: 20, left: 30},
     };
-    this.params = Object.assign({}, defaults, params);
+    this._params = params
+    this.params = Object.assign({}, defaults, this._params.pd_params);
     if(params.margin_top !== undefined){
         this.params.margin.top = params.margin_top;
     }else if(params.margin_bottom !== undefined) {
@@ -82,7 +81,7 @@ function setup(data) {
         return feasible;
     }
 
-    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, this.dfe_endpoint, this.query_data, this.result_parser);
+    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, this.dfe_endpoint, this._params, this.query_data, this.result_parser);
     this.DFEDiagram.init();
 
     var margin = this.params.margin,
@@ -146,26 +145,31 @@ function setup(data) {
         .attr("points", "0," + height + " " + width+ "," + height);
 
     // Current Point
-    function move_point(coord, point, text) {
+    var pdx = 20,
+        pdy = 10;
+    function move_point(coord, g, text) {
         var px = coord[0],
             py = coord[1];
-        point.attr("cx", xScale(px))
-            .attr("cy", yScale(py));
-        text.text(px + ", " + py)
-            .attr("x", xScale(px) - 13)
-            .attr("y", yScale(py) - 7);
+        g.attr("transform", "translate(" + (px-pdx) + "," + (py-pdy) + ")");
+        var f = d3.format(".3r");
+        text.text(f(xScale.invert(px)) + ", " + f(yScale.invert(py)));
     }
-    var cur_point_g = polygon_g.append("g");
-    var px = data.default_coord.x,
-        py = data.default_coord.y;
+    var px = xScale(data.default_coord.x),
+        py = yScale(data.default_coord.y);
+    var cur_point_g = polygon_g.append("g")
+        .attr("transform", "translate(" + px + "," + py + ")");
     var cur_point = cur_point_g.append("circle")
-        .attr("r", 3)
+        .attr("cx", pdx)
+        .attr("cy", pdy)
+        .attr("r", 5)
         .attr("class", "cur-point")
-        .style("fill", "darkgray");
+        .style("fill", "#2e3ccc");
     var cur_point_text = cur_point_g.append("text")
+        .attr("x", 0)
+        .attr("y", 0)
         .attr("text-anchor", "middle")
         .style("font-size", "0.7em");
-    move_point([px, py], cur_point, cur_point_text);
+    move_point([px, py], cur_point_g, cur_point_text);
 
     // Labels
     regions.forEach(function(region) {
@@ -193,7 +197,7 @@ function setup(data) {
         // TODO: $ is global. not searching under svg_div
         //$(" #x").text(inverted_coords[0]);
         //$(" #y").text(inverted_coords[1]);
-        move_point(coords, cur_point, cur_point_text);
+        move_point(coords, cur_point_g, cur_point_text);
 
         _.DFEDiagram.update(inverted_coords)
         //$.getJSON("/dfe", invert_coords, function() {
