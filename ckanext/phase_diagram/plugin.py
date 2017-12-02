@@ -125,7 +125,9 @@ def defect_fect_formation_diagram_view(context, data_dict):
 
   diagram = DefectFormationEnergyDiagram(dfes, chemical_potentials, charges, fermi_energy_lim)
   vert_dict = diagram.get_lowest_points()
-  ifl = diagram.find_intrinsic_fermi_level()
+  ifl = diagram.find_intrinsic_fermi_level().tolist()
+  print "="*80
+  print "IFL IS", ifl
   lines = [{"label": k, "vertices": v.tolist()} for k, v in vert_dict.iteritems()]
   data = {"lines": lines,
           "bounds": [fermi_energy_axis_lim, dfe_lim],

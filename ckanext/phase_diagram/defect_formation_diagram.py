@@ -52,34 +52,43 @@ class DefectFormationEnergyDiagram(object):
     startx, endx = self.fermi_energy_bounds
     pos = {}
     neg = {}
-    pos_positions = [i for i, c in self.charges if c > 0]
-    neg_positions = [i for i, c in self.charges if c < 0]
     for name, coefs_dfes in self.data.iteritems():
-      pos_coefs_dfes = [coefs_dfes[i] for i in pos_positions]
-      neg_coefs_dfes = [coefs_dfes[i] for i in neg_positions]
-      pA, pb = self.get_equations(pos_coefs_dfes)
-      nA, nb = self.get_equations(neg_coefs_dfes)
+      #pos_coefs_dfes = [coefs_dfes[i] for i in pos_positions]
+      #neg_coefs_dfes = [coefs_dfes[i] for i in neg_positions]
+      #pA, pb = self.get_equations(pos_coefs_dfes)
+      #nA, nb = self.get_equations(neg_coefs_dfes)
+      charges = [self.charges[i] for i, e in enumerate(coefs_dfes[1]) if e is not None]
+      pos_positions = [i for i, c in enumerate(charges) if c > 0]
+      neg_positions = [i for i, c in enumerate(charges) if c < 0]
+      A, b = self.get_equations(coefs_dfes)
+      pA, pb = A[pos_positions,:], b[pos_positions]
+      nA, nb = A[neg_positions,:], b[neg_positions]
       pos[name] = (pA, pb)
       neg[name] = (nA, nb)
-    # Find intersections
+    # Find intersections of lines
     intersections = []
-    pflat = [(name, eq) for name, value in pos.iteritems() for eq in value]
-    nflat = [(name, eq) for name, value in neg.iteritems() for eq in value]
+    #pflat = [(name, eq) for name, value in pos.iteritems() for eq in value]
+    #nflat = [(name, eq) for name, value in neg.iteritems() for eq in value]
+    pflat = [(name, i, (value[0][i], value[1][i])) for name, value in pos.iteritems() for i in range(len(value[0]))]
+    nflat = [(name, i, (value[0][i], value[1][i])) for name, value in neg.iteritems() for i in range(len(value[0]))]
     for pos_neg in itertools.product(pflat, nflat):
-      ((pname, peq), (nname, neq)) = pos_neg
+      ((pname, pi, peq), (nname, ni, neq)) = pos_neg
       try:
-        i = vector_helpers.intersection(peq[0], peq[1], neq[0], neq[1])
-        # Is valid? Check if the intersection falls on the section that is 'lowest'
-        pcharge = peq[0][0]
-        ncharge = neq[0][0]
-        pcpos = lowest_lines.index(pcharge)
-        ncpos = lowest_lines.index(ncharge)
-        # in the right segments by x axis
-        good = lowest_points[pname][pcpos][0] <= i[0] <= lowest_points[pname][pcpos+1][1] and \
-          lowest_points[nname][ncpos][0] <= i[0] <= lowest_points[nname][ncpos+1][1]
-        if good:
-          intersections.append(i)
-      except LinAlgError:
+        pcpos = lowest_lines[pname].index(pi)
+        ncpos = lowest_lines[nname].index(ni)
+        try:
+          i = vector_helpers.intersection(peq[0], peq[1], neq[0], neq[1])
+          # Is valid? Check if the intersection falls on the section that is 'lowest'
+          pcharge = peq[0][0]
+          ncharge = neq[0][0]
+          # in the right segments by x axis
+          good = lowest_points[pname][pcpos][0] <= i[0] <= lowest_points[pname][pcpos+1][1] and \
+            lowest_points[nname][ncpos][0] <= i[0] <= lowest_points[nname][ncpos+1][1]
+          if good:
+            intersections.append(i)
+        except LinAlgError:
+          continue
+      except ValueError:
         continue
     # Lowest intersection
     return min(intersections, key=lambda i: i[1])
@@ -129,12 +138,13 @@ class DefectFormationEnergyDiagram(object):
           minx = intersection[0]
           mini = i
       min_eq = mini
-      lines.append(mini)
+      lines.append(min_eq)
       cur = curx, cury = intersections[min_eq]
       vertices.append(cur)
 
     if endx != vertices[-1][0]:
       endy = c[min_eq] * endx + bb[min_eq]
+      lines.append(min_eq)
       vertices.append(np.array([endx, endy]))
 
     return {"points": np.array(vertices),

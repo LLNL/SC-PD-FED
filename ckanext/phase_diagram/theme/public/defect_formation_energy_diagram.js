@@ -157,8 +157,15 @@ function setup_graph(data) {
         .style("stroke-dasharray", "2, 3")
         .attr("class", "minor-bounds");
 
+    // intrinsic fermi level 
+    // just a dot for now
+    var point = this.svg.append("circle")
+      .attr("cx", _.xScale(data.intrinsic_fermi_level[0]))
+      .attr("cy", _.yScale(data.intrinsic_fermi_level[1]))
+      .attr("r", 5)
+      .style("fill", "black");
 
-    // TODO: dfe-labels bad
+    // TODO: dfe-labels in a separate plain div, lines in legened look bad
     var legend_div = document.createElement("DIV");
     //document.getElementsByName(this.svg_div).appendChild(legend_div);
     //d3.select(legend_div).append()
