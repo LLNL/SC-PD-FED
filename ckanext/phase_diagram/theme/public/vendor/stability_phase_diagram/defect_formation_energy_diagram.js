@@ -158,18 +158,17 @@ function setup_graph(data) {
         .attr("class", "minor-bounds");
 
     // intrinsic fermi level
-    this.intrinsic_fermi_level_g = this.svg.append("g");
     var iflx = data.intrinsic_fermi_level[0],
-        ifly = data.intrinsic_fermi_level[1];
+        ifly = data.intrinsic_fermi_level[1],
+        siflx = _.xScale(iflx),
+        sifly = _.yScale(ifly);
+    this.intrinsic_fermi_level_g = this.svg.append("g");
     this.intrinsic_fermi_level_g.append("line")
-        .attr("x1", _.xScale(iflx)).attr("y1", _.yScale(ifly))
-        .attr("x2", iflx).attr("y2", height)
-        .style("stroke-width", "3");
-    var point = this.svg.append("circle")
-      .attr("cx", _.xScale(data.intrinsic_fermi_level[0]))
-      .attr("cy", _.yScale(data.intrinsic_fermi_level[1]))
-      .attr("r", 5)
-      .style("fill", "black");
+        .attr("x1", 0).attr("y1", 0)
+        .style("stroke-width", "1")
+        .style("stroke", "black");
+    this.intrinsic_fermi_level_g.append("polygon");
+    move_ifl_indicator.call(this, siflx, sifly);
 
     // TODO: dfe-labels in a separate plain div, lines in legened look bad
     var legend_div = document.createElement("DIV");
@@ -179,6 +178,26 @@ function setup_graph(data) {
         .append("div");
     divs_in_legend.append("span").text("____").style("color", function(d, i) {return _.colors[i % _.colors.length]});
     divs_in_legend.append("span").text(function(d) { return d.label;});
+}
+
+function move_ifl_indicator(x, y) {
+    var margin = this.params.margin,
+        width = this.params['width'] - margin.left - margin.right,
+        height = this.params['height'] - margin.top - margin.bottom;
+    var aw = 3,
+        ah = 6;
+    if(y > height) {
+      this.intrinsic_fermi_level_g
+        .style("display", "none");
+    } else {
+      this.intrinsic_fermi_level_g
+        .attr("transform", "translate(" + x + "," + y + ")")
+        .style("display", "initial");
+      this.intrinsic_fermi_level_g.select("line")
+        .attr("x2", 0).attr("y2", height-y-ah);
+      this.intrinsic_fermi_level_g.select("polygon")
+        .attr("points", ""+-aw+","+(height-y-ah)+" "+aw+","+(height-y-ah)+" "+0+","+(height-y));
+    }
 }
 
 function reset_lines() {
@@ -204,6 +223,7 @@ function drawLines(data) {
     }).style("fill", "None")
         .attr("clip-path", "url(#dfe-clip)");
 
+    move_ifl_indicator.call(this, _.xScale(data.intrinsic_fermi_level[0]), _.yScale(data.intrinsic_fermi_level[1]));
     //// Labels
     //regions.forEach(function(region) {
     //    if(region.vertices.length > 0) {
