@@ -157,8 +157,14 @@ function setup_graph(data) {
         .style("stroke-dasharray", "2, 3")
         .attr("class", "minor-bounds");
 
-    // intrinsic fermi level 
-    // just a dot for now
+    // intrinsic fermi level
+    this.intrinsic_fermi_level_g = this.svg.append("g");
+    var iflx = data.intrinsic_fermi_level[0],
+        ifly = data.intrinsic_fermi_level[1];
+    this.intrinsic_fermi_level_g.append("line")
+        .attr("x1", _.xScale(iflx)).attr("y1", _.yScale(ifly))
+        .attr("x2", iflx).attr("y2", height)
+        .style("stroke-width", "3");
     var point = this.svg.append("circle")
       .attr("cx", _.xScale(data.intrinsic_fermi_level[0]))
       .attr("cy", _.yScale(data.intrinsic_fermi_level[1]))

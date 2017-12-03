@@ -82,8 +82,8 @@ class DefectFormationEnergyDiagram(object):
           pcharge = peq[0][0]
           ncharge = neq[0][0]
           # in the right segments by x axis
-          good = lowest_points[pname][pcpos][0] <= i[0] <= lowest_points[pname][pcpos+1][1] and \
-            lowest_points[nname][ncpos][0] <= i[0] <= lowest_points[nname][ncpos+1][1]
+          good = lowest_points[pname][pcpos][0] <= i[0] <= lowest_points[pname][pcpos+1][0] and \
+            lowest_points[nname][ncpos][0] <= i[0] <= lowest_points[nname][ncpos+1][0]
           if good:
             intersections.append(i)
         except LinAlgError:
@@ -91,7 +91,10 @@ class DefectFormationEnergyDiagram(object):
       except ValueError:
         continue
     # Lowest intersection
-    return min(intersections, key=lambda i: i[1])
+    if len(intersections) > 0:
+      return min(intersections, key=lambda i: i[1])
+    else:
+      return None
 
   @staticmethod
   def find_lowest_lines_points(A, b, domain):
@@ -110,7 +113,7 @@ class DefectFormationEnergyDiagram(object):
     min_eq = np.argmin(ys)
     cury = ys[min_eq]
     vertices = [np.array([curx, cury])]
-    lines = []
+    lines = [min_eq]
 
     while True:
       #other_inds = np.arange(A.shape[0]) != min_eq
@@ -140,25 +143,23 @@ class DefectFormationEnergyDiagram(object):
       min_eq = mini
       lines.append(min_eq)
       cur = curx, cury = intersections[min_eq]
-      vertices.append(cur)
+      if curx < endx:
+        vertices.append(cur)
 
     if endx != vertices[-1][0]:
       endy = c[min_eq] * endx + bb[min_eq]
-      lines.append(min_eq)
       vertices.append(np.array([endx, endy]))
 
     return {"points": np.array(vertices),
-    "lines": lines}
+            "lines": lines}
 
 
 if __name__ == "__main__":
   charges = [3, 2, 1, 0, -1, -2, -3]
   dfes = {
-    "In_Cu": [(-1, 1, 0), [None, -1.01, 0.24, 1.86, None, None, None]],
+  "In_Cu": [(-1, 1, 0), [None, -1.01, 0.24, 1.86, None, None, None]],
     "In_DX": [(-1, 1, 0), [None, None, None, 1.61, None, None, None]],
-    #"In_DX": [(0, 0, 0), [None, None, None, 1.61, None, None, None]],
     "V_Cu": [(-1, 0, 0), [None, None, None, None, 1.19, None, None]],
-    #"Cu_In": [(1, -1, 0), [None, None, None, 1.54, 1.83, 2.41, None]],
     "Cu_In": [(1, -1, 0), [None, None, None, 2.08, 2.22, 2.84, None]],
     "V_In": [(0, -1, 0), [None, None, None, 3.85, 3.88, 4.3, 4.99]],
     "V_Se": [(0, 0, -1), [None, 2.39, None, 2.45, 3.43, 4.78, 5.66]],
@@ -184,7 +185,7 @@ if __name__ == "__main__":
   #mu_cu = -0.1
   #mu_in = -1.3
   mu_cu, mu_in = points[-1]
-  mu_cu, mu_in = -0.5, -1.87
+  mu_cu, mu_in = -0.3, -1 # -0.5, -1.87
   mu_se = (-2.37 - mu_cu - mu_in) / 2.0
   chemical_potentials = np.array([mu_cu, mu_in, mu_se])
   print 'chemical potentials', chemical_potentials
@@ -211,6 +212,9 @@ if __name__ == "__main__":
   #      y = [y0, y1]
   #      ax.plot(x, y, '.', linestyle="solid", markersize=2, alpha=0.5, label="{} {}".format(name, charge))
   vert_dict = diagram.get_lowest_points()
+  ife = diagram.find_intrinsic_fermi_level()
+  print ife
+  ax.plot(ife[0], ife[1], '.', markersize="10")
   print vert_dict
   for name, vertices in vert_dict.iteritems():
     #A, b = get_equations(coef_energy)
