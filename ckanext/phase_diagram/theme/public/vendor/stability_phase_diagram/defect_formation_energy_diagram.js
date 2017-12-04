@@ -4,7 +4,6 @@
 var self = this;
 
 this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, params, query_data, result_parser) {
-    console.log("DFEDiagram constructor");
     this.svg_div = svg_div;
     this.chemical_potential = chemical_potentials_coords;
     this.endpoint = endpoint;

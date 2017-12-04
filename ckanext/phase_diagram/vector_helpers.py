@@ -21,7 +21,6 @@ def points_on_lines(hyperplanes):
   """
   intersections = []
   for row in hyperplanes:
-    #intersections.append(an_intersection(perpendicular(row[:-1]), row[-1]))
     intersections.append(an_intersection(row[:-1], -row[-1]))
   return np.array(intersections)
 

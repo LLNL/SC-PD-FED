@@ -180,15 +180,10 @@ if __name__ == "__main__":
     #[-0.4, -2.],
     [-0.3, -1.6],
   ]
-  #mu_cu = -0.1
-  #mu_in = -1.87
-  #mu_cu = -0.1
-  #mu_in = -1.3
   mu_cu, mu_in = points[-1]
   mu_cu, mu_in = -0.3, -1 # -0.5, -1.87
   mu_se = (-2.37 - mu_cu - mu_in) / 2.0
   chemical_potentials = np.array([mu_cu, mu_in, mu_se])
-  print 'chemical potentials', chemical_potentials
   fermi_energy_lim = [0, 1]
 
   diagram = DefectFormationEnergyDiagram(dfes, chemical_potentials, charges, fermi_energy_lim)
@@ -213,9 +208,7 @@ if __name__ == "__main__":
   #      ax.plot(x, y, '.', linestyle="solid", markersize=2, alpha=0.5, label="{} {}".format(name, charge))
   vert_dict = diagram.get_lowest_points()
   ife = diagram.find_intrinsic_fermi_level()
-  print ife
   ax.plot(ife[0], ife[1], '.', markersize="10")
-  print vert_dict
   for name, vertices in vert_dict.iteritems():
     #A, b = get_equations(coef_energy)
     #vertices = find_lowest_points(A, b, fermi_energy_lim)

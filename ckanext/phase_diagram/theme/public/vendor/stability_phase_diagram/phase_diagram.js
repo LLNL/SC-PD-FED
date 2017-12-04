@@ -57,8 +57,6 @@ PhaseDiagram.prototype.init = function() {
 function setup(data) {
     function get_center(vertices) {
         // Return center (average) point given vertices
-        if(vertices.length === 0)
-            console.log('hi');
         var dim = vertices[0].length;
         var sums = [0,0];
         vertices.forEach(function(vert) {
@@ -209,14 +207,9 @@ function setup(data) {
             xScale.invert(coords[0]),
             yScale.invert(coords[1])
         ];
-        // TODO: $ is global. not searching under svg_div
-        //$(" #x").text(inverted_coords[0]);
-        //$(" #y").text(inverted_coords[1]);
         move_point(coords, cur_point_g, cur_point_text);
 
         _.DFEDiagram.update(inverted_coords)
-        //$.getJSON("/dfe", invert_coords, function() {
-        //});
     });
 
 }

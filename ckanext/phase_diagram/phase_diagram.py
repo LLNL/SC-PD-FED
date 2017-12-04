@@ -11,14 +11,7 @@ from polyhedron import interior_point, ConvexPolyhedron
 from vector_helpers import points_on_lines
 import re
 import numpy as np
-from scipy.spatial import HalfspaceIntersection
 from collections import OrderedDict
-"""
-Questions:
-Here I assume the sub compound is present in all the compounds in a phase diagram. Is this true?
-We're graphing on this 2d plane that is the plane satisfies the equation muCu + muIn + 2*muSe = Hf(CuInSe2)
-"""
-
 
 class Compound(object):
   def __init__(self, formula_dict, enthalpy_of_formation):
@@ -307,8 +300,6 @@ def plot_compounds(compound, compounds):
   other_compounds = [c for c in compounds if c != compound]
   halfspaces = sd.halfspaces(compound, other_compounds)
   poly = sd.get_region(compound)
-  print 'polygon for ', compound
-  print poly
   #halfspaces, hsi = sd.get_halfspace_intersection(compound)
   plot(halfspaces, poly)
 
@@ -316,8 +307,6 @@ def plot_regions(compound, compounds, axis, bounds):
   sd = StabilityDiagram(compound, compounds, axis, bounds)
   #sd.get_region(Compound.from_string("Cu 0"))
   regions = sd.get_regions()
-  print '\nREGIONS\n'
-  print regions
 
   import matplotlib.pyplot as plt
   fig = plt.figure()
