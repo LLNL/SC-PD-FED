@@ -63,47 +63,10 @@ def phase_diagram_view(context, data_dict):
   data = {"regions": regions,
           "bounds": [[-3, 0], [-3, 0]],
           "default_coord": default_coord,
-          }
-  return data
-
-
-def _defect_fect_formation_diagram_view(context, data_dict):
-  dfes = {
-    "In_Cu": [(-1, 1, 0), [None, -1.01, 0.24, 1.86, None, None, None]],
-    "In_DX": [(-1, 1, 0), [None, None, None, 1.61, None, None, None]],
-    "V_Cu": [(-1, 0, 0), [None, None, None, None, 1.19, None, None]],
-    # "Cu_In": [(1, -1, 0), [None, None, None, 1.54, 1.83, 2.41, None]],
-    "Cu_In": [(1, -1, 0), [None, None, None, 2.08, 2.22, 2.84, None]],
-    "V_In": [(0, -1, 0), [None, None, None, 3.85, 3.88, 4.3, 4.99]],
-    "V_Se": [(0, 0, -1), [None, 2.39, None, 2.45, 3.43, 4.78, 5.66]],
-    "Cu_i": [(1, 0, 0), [None, None, 0.17, 1.68, None, None, None]],
-    "In_i": [(0, 1, 0), [0.60, 0.95, 1.43, 2.84, None, None, None]],
-    "Se_i": [(0, 0, 1), [None, 2.48, 2.67, 2.87, 3.51, 4.87, None]],
-    "In_Cu-2V_Cu": [(-1 + (-2), 1, 0), [None, None, None, 1.07, None, None, None]],
-    "V_Se-V_Cu": [(-1, 0, -1), [None, None, 2.9, None, 3.47, 4.33, 5.66]],
-  }
-  charges = [3, 2, 1, 0, -1, -2, -3]
-  defaults_mu = [-0.5, -1.87]
-  # TODO: use validator
-  mu_cu = float(data_dict.get("x", defaults_mu[0]))
-  mu_in = float(data_dict.get("y", defaults_mu[1]))
-  mu_se = (-2.37 - mu_cu - mu_in) / 2.0
-  chemical_potentials = [mu_cu, mu_in, mu_se]
-  fermi_energy_lim = [0, 1]
-  fermi_energy_axis_lim = [-0.2, 2]
-  dfe_lim = [-0.7, 4]
-
-  diagram = DefectFormationEnergyDiagram(dfes, chemical_potentials, charges, fermi_energy_lim)
-  vert_dict = diagram.get_lowest_points()
-  lines = [{"label": k, "vertices": v.tolist()} for k, v in vert_dict.iteritems()]
-  data = {"lines": lines,
-          "bounds": [fermi_energy_axis_lim, dfe_lim],
-          "minor_bounds": [[0, 1], [0]],  # little gray lines
           "x_label": "ΔμCu eV",
           "y_label": "ΔμIn eV"
           }
   return data
-
 
 @tk.side_effect_free
 def defect_fect_formation_diagram_view(context, data_dict):

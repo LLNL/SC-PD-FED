@@ -16,7 +16,7 @@ this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, params
     var defaults = {
         "height": 500,
         "width": 400,
-        "margin": {top: 20, right: 30, bottom: 20, left: 30},
+        "margin": {top: 35, right: 30, bottom: 20, left: 37},
     };
 
     this.colors = [
@@ -123,19 +123,21 @@ function setup_graph(data) {
     xAxisG.selectAll("text")
         .attr("transform", "translate(0, -20)")
     yAxisG.selectAll("text")
-        .attr("transform", "translate(-38, 0)");
+        .attr("transform", "translate(-27, 0)");
 
     var labels = svg_whole.append("g");
     labels.append("text")
         .attr("x", this.params['width']/2)
-        .attr("y", 5)
+        .attr("y", 15)
         .attr("text-anchor", "middle")
         .text(data['x_label']);
+    var lx = 12,
+        ly = this.params.height/2;
     labels.append("text")
-        .attr("x", 10)
-        .attr("y", this.params['height']/2)
+        .attr("x", lx)
+        .attr("y", ly)
         .attr("text-anchor", "middle")
-        .attr("transform", "rotate(90)")
+        .attr("transform", "rotate(270"+" "+lx+" "+ly+")")
         .text(data['y_label']);
 
     var _ = this;

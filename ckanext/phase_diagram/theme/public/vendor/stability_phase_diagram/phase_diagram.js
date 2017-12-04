@@ -16,7 +16,7 @@ this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint, dfe_endpoint,
     var defaults = {
         "height": 500,
         "width": 500,
-        "margin": {top: 20, right: 30, bottom: 20, left: 30},
+        "margin": {top: 35, right: 35, bottom: 20, left: 30},
     };
     this._params = params
     this.params = Object.assign({}, defaults, this._params.pd_params);
@@ -99,20 +99,6 @@ function setup(data) {
         .attr("height", height + margin.top + margin.bottom);
     var svg = svg_whole.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Axis labels
-    var labels = svg_whole.append("g");
-    labels.append("text")
-        .attr("x", this.params['width']/2)
-        .attr("y", 5)
-        .attr("text-anchor", "middle")
-        .text(data['x_label']);
-    labels.append("text")
-        .attr("x", this.params['width']-10)
-        .attr("y", this.params['height']/2)
-        .attr("text-anchor", "middle")
-        .attr("transform", "rotate(90)")
-        .text(data['y_label']);
     // Axis
     var xAxis = d3.axisBottom(xScale);
     var yAxis = d3.axisLeft(yScale);
@@ -125,7 +111,23 @@ function setup(data) {
     xAxisG.selectAll("text")
         .attr("transform", "translate(0, -22)");
     yAxisG.selectAll("text")
-        .attr("transform", "translate(35, 0)");
+        .attr("transform", "translate(30, 0)");
+
+    // Axis labels
+    var labels = svg_whole.append("g");
+    labels.append("text")
+        .attr("x", this.params['width']/2)
+        .attr("y", 15)
+        .attr("text-anchor", "middle")
+        .text(data['x_label']);
+    var lx = this.params.width-10,
+        ly = this.params.height/2;
+    labels.append("text")
+        .attr("x", lx)
+        .attr("y", ly)
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(90 "+lx+" "+ly+")")
+        .text(data['y_label']);
 
     // Polygons
     var polygon_g = svg.append("g");
