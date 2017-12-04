@@ -9,10 +9,10 @@ from ckan.common import json
 import phase_diagram
 from defect_formation_diagram import DefectFormationEnergyDiagram
 
-log = getLogger(__name__)
-ignore_empty = p.toolkit.get_validator('ignore_empty')
-natural_number_validator = p.toolkit.get_validator('natural_number_validator')
-Invalid = p.toolkit.Invalid
+#log = getLogger(__name__)
+#ignore_empty = p.toolkit.get_validator('ignore_empty')
+#natural_number_validator = p.toolkit.get_validator('natural_number_validator')
+#Invalid = p.toolkit.Invalid
 
 
 @tk.side_effect_free
@@ -80,7 +80,6 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
   '''
   p.implements(p.IConfigurer, inherit=True)
   p.implements(p.IResourceView, inherit=True)
-  #p.implements(p.ITemplateHelpers, inherit=True)
   p.implements(p.IActions)
 
   def update_config(self, config):
@@ -92,14 +91,22 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     tk.add_template_directory(config, 'theme/templates')
     tk.add_resource('theme/public', 'ckanext-spdview')
 
-  def setup_template_variables(self, context, data_dict):
-    resource = data_dict["resource"]
+  def corresponding_resource_names(self, resource):
     name = resource["name"]
     name = name.split(" ", 1)[0]
-    package = data_dict["package"]
+    return (name+"_pd_data.csv", name+"_dfe_data.csv")
+
+  def corresponding_resource_id(self, resource, package):
+    pd_name, dfe_name = self.corresponding_resource_names(resource)
     id_name = {r["name"]: r["id"] for r in package["resources"]}
-    pd_resource_id = id_name[name+"_pd_data.csv"]
-    dfe_resource_id = id_name[name+"_dfe_data.csv"]
+    pd_resource_id = id_name[pd_name]
+    dfe_resource_id = id_name[dfe_name]
+    return (pd_resource_id, dfe_resource_id)
+
+  def setup_template_variables(self, context, data_dict):
+    resource = data_dict["resource"]
+    package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
+    pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
     return {'resource_json': json.dumps(data_dict['resource']),
             'resource_view_json': json.dumps(data_dict['resource_view']),
             'resource': resource,
@@ -118,25 +125,22 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             'title': 'Semiconductor Stability Phase Diagram',
             'icon': 'eye-open',
             'requires_datastore': True,
-            # 'default_title': p.toolkit._('View'),
             }
 
   def can_view(self, data_dict):
     # Return whether plugin can render a particular resource
     # TODO: done?
     resource = data_dict['resource']
+    package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
+    requirements = self.corresponding_resource_names(resource)
+    pkg_resources = map(lambda r: r['name'], package['resources'])
+    valid = all(req in pkg_resources for req in requirements)
 
-    if (resource.get('datastore_active') or
-            '_datastore_only_resource' in resource.get('url', '')):
-      return True
-    resource_format = resource.get('format', None)
-    print 'format is', resource_format
-    #if resource_format:
-    #  return resource_format.lower() in ['csv', 'xls', 'xlsx', 'tsv']
-    #else:
-    #  return False
-    # TODO: check if there are two more resources in this dataset that start wth the same compound and are like *dfe_data.json *pd_data.csv
-    return True
+    #if (resource.get('datastore_active') or
+    #        '_datastore_only_resource' in resource.get('url', '')):
+    #  return True
+    #resource_format = resource.get('format', None)
+    return valid
 
   # IActions
   def get_actions(self):
