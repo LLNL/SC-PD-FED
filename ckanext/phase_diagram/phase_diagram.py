@@ -1,5 +1,5 @@
 """Stability diagram for HydroGEN project.
-Peggy Li
+Peggy Li, li54@llnl.gov
 
 Data from:
 Pohl, Johan, and Karsten Albe. "Intrinsic point defects in CuInSe 2 and CuGaSe

@@ -18,33 +18,7 @@ Invalid = p.toolkit.Invalid
 @tk.side_effect_free
 def phase_diagram_view(context, data_dict):
   data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
-  compounds = [
-    "CuInSe2 -2.37",
-    "CuGaSe2 -2.67",
-    "CuIn5Se8 -9.37",
-    "CuSe -0.53",
-    "Cu2Se -0.68",
-    "Cu3Se2 -1.12",
-    "InSe -1.28",
-    "In2Se3 -3.25",
-    "In4Se3 -3.55",
-    "GaSe -1.47",
-    "Ga2Se3 -3.62",
-    "Ga 0",
-    "Cu 0",
-    "In 0",
-    "Se 0",
-  ]
-
-  points = [
-    ['A', -0.5, -1.87],
-    ['B', -0.1, -1.3],
-    ['C', -0.4, -1.],
-    ['D', -0.0, -0.2],
-    ['E', -0.0, -0.9],
-    ['F', -0.4, -2.],
-  ]
-
+  compounds = [[d['compound'], d['fe']] for d in data]
   compounds = phase_diagram.parse_compounds(compounds)
 
   # TODO: have ["Cu", "In", "Se"] , coords, be passed in by request
@@ -70,7 +44,6 @@ def phase_diagram_view(context, data_dict):
 
 @tk.side_effect_free
 def defect_fect_formation_diagram_view(context, data_dict):
-  #resource = tk.get_action("resource_show")(data_dict={"id": data_dict["resource_id"]})
   data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
   dfes = {}
   for d in data:
@@ -91,8 +64,6 @@ def defect_fect_formation_diagram_view(context, data_dict):
   diagram = DefectFormationEnergyDiagram(dfes, chemical_potentials, charges, fermi_energy_lim)
   vert_dict = diagram.get_lowest_points()
   ifl = diagram.find_intrinsic_fermi_level().tolist()
-  print "="*80
-  print "IFL IS", ifl
   lines = [{"label": k, "vertices": v.tolist()} for k, v in vert_dict.iteritems()]
   data = {"lines": lines,
           "bounds": [fermi_energy_axis_lim, dfe_lim],
@@ -102,39 +73,6 @@ def defect_fect_formation_diagram_view(context, data_dict):
           "y_label": "Formation energy [eV]",
           }
   return data
-
-def in_list(list_possible_values):
-  '''
-    Validator that checks that the input value is one of the given
-    possible values.
-
-    :param list_possible_values: function that returns list of possible values
-        for validated field
-    :type possible_values: function
-    '''
-
-  def validate(key, data, errors, context):
-    if not data[key] in list_possible_values():
-      raise Invalid('"{0}" is not a valid parameter'.format(data[key]))
-
-  return validate
-
-
-def datastore_fields(resource, valid_field_types):
-  '''
-    Return a list of all datastore fields for a given resource, as long as
-    the datastore field type is in valid_field_types.
-
-    :param resource: resource dict
-    :type resource: dict
-    :param valid_field_types: field types to include in returned list
-    :type valid_field_types: list of strings
-    '''
-  data = {'resource_id': resource['id'], 'limit': 0}
-  fields = tk.get_action('datastore_search')({}, data)['fields']
-  return [{'value': f['id'], 'text': f['id']} for f in fields
-          if f['type'] in valid_field_types]
-
 
 class PhaseDiagramPlugin(p.SingletonPlugin):
   '''
