@@ -106,13 +106,13 @@ function setup(data) {
         .attr("x", this.params['width']/2)
         .attr("y", 5)
         .attr("text-anchor", "middle")
-        .text(this.params['x_label']);
+        .text(data['x_label']);
     labels.append("text")
         .attr("x", this.params['width']-10)
         .attr("y", this.params['height']/2)
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(90)")
-        .text(this.params['y_label']);
+        .text(data['y_label']);
     // Axis
     var xAxis = d3.axisBottom(xScale);
     var yAxis = d3.axisLeft(yScale);
