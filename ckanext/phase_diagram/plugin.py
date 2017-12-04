@@ -99,6 +99,8 @@ def _defect_fect_formation_diagram_view(context, data_dict):
   data = {"lines": lines,
           "bounds": [fermi_energy_axis_lim, dfe_lim],
           "minor_bounds": [[0, 1], [0]],  # little gray lines
+          "x_label": "ΔμCu eV",
+          "y_label": "ΔμIn eV"
           }
   return data
 
@@ -133,6 +135,8 @@ def defect_fect_formation_diagram_view(context, data_dict):
           "bounds": [fermi_energy_axis_lim, dfe_lim],
           "minor_bounds": [[0, 1], [0]],  # little gray lines
           "intrinsic_fermi_level": ifl, #[x, y]
+          "x_label": "Fermi energy [eV]",
+          "y_label": "Formation energy [eV]",
           }
   return data
 

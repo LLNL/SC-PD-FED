@@ -100,6 +100,19 @@ function setup(data) {
     var svg = svg_whole.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    // Axis labels
+    var labels = svg_whole.append("g");
+    labels.append("text")
+        .attr("x", this.params['width']/2)
+        .attr("y", 5)
+        .attr("text-anchor", "middle")
+        .text(this.params['x_label']);
+    labels.append("text")
+        .attr("x", this.params['width']-10)
+        .attr("y", this.params['height']/2)
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(90)")
+        .text(this.params['y_label']);
     // Axis
     var xAxis = d3.axisBottom(xScale);
     var yAxis = d3.axisLeft(yScale);
@@ -110,9 +123,9 @@ function setup(data) {
         .call(yAxis);
 
     xAxisG.selectAll("text")
-        .attr("transform", "translate(0, -22)")
+        .attr("transform", "translate(0, -22)");
     yAxisG.selectAll("text")
-        .attr("transform", "translate(35, 0)")
+        .attr("transform", "translate(35, 0)");
 
     // Polygons
     var polygon_g = svg.append("g");
@@ -171,7 +184,7 @@ function setup(data) {
         .style("font-size", "0.7em");
     move_point([px, py], cur_point_g, cur_point_text);
 
-    // Labels
+    // Compound Labels
     regions.forEach(function(region) {
         if(region.vertices.length > 0) {
             var center = get_center(region.vertices);

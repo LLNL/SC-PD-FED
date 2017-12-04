@@ -125,6 +125,19 @@ function setup_graph(data) {
     yAxisG.selectAll("text")
         .attr("transform", "translate(-38, 0)");
 
+    var labels = svg_whole.append("g");
+    labels.append("text")
+        .attr("x", this.params['width']/2)
+        .attr("y", 5)
+        .attr("text-anchor", "middle")
+        .text(this.params['x_label']);
+    labels.append("text")
+        .attr("x", 10)
+        .attr("y", this.params['height']/2)
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(90)")
+        .text(this.params['y_label']);
+
     var _ = this;
 
     this.polyline_g = this.svg.append("g");
