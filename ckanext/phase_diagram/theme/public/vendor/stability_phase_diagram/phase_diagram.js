@@ -18,7 +18,7 @@ this.PhaseDiagram = function(phase_diagram_div, dfe_div, endpoint, dfe_endpoint,
         "width": 500,
         "margin": {top: 35, right: 35, bottom: 20, left: 30},
     };
-    this._params = params
+    this._params = params;
     this.params = Object.assign({}, defaults, this._params.pd_params);
     if(params.margin_top !== undefined){
         this.params.margin.top = params.margin_top;

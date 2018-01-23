@@ -9,9 +9,10 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
             dfe_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_dfe_diagram');
 
         var query_data = {
-          "pd_resource_id": this.options.pdResourceId,
-          "dfe_resource_id": this.options.dfeResourceId,
-        }
+            "pd_resource_id": this.options.pdResourceId,
+            "dfe_resource_id": this.options.dfeResourceId,
+            "elements": this.options.elements,
+        };
         var params = {
             "pd_params": this.options.pdParams,
             "dfe_params": this.options.dfeParams,

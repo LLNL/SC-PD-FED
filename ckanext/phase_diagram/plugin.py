@@ -138,7 +138,8 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             'resource': resource,
             'pd_resource_id': pd_resource_id,
             'dfe_resource_id': dfe_resource_id,
-            'pd_params': json.dumps({"elements": ["Cu", "In", "Se"]}), # TODO: hardcoded
+            'elements': {"elements": ["Cu", "In", "Se"]},# TODO: hardcoded
+            'pd_params': json.dumps({}),
             'dfe_params': json.dumps({}),
             'dataset_id': package['id']
             }
