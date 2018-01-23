@@ -31,7 +31,7 @@ this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, params
         "lightskyblue",
         "black",
     ];
-    this._params = params
+    this._params = params;
     this.params = Object.assign({}, defaults, this._params.dfe_params);
     if(params.margin_top !== undefined){
         this.params.margin.top = params.margin_top;

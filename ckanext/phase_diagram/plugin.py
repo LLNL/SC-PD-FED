@@ -21,11 +21,13 @@ def phase_diagram_view(context, data_dict):
   compounds = [[d['compound'], d['fe']] for d in data]
   compounds = phase_diagram.parse_compounds(compounds)
 
-  # TODO: have ["Cu", "In", "Se"] , coords, be passed in by request
-  cu_in_se_compounds = phase_diagram.select_compounds(compounds, ["Cu", "In", "Se"])
+  # Example ["Cu", "In", "Se"]
+  # TODO: , coords, be passed in by request
+  elements = data_dict["elements"]
+  cu_in_se_compounds = phase_diagram.select_compounds(compounds, elements)
   CuInSe2 = compounds[0]
   lower_lims = [-3, -3]
-  sd = phase_diagram.StabilityDiagram(CuInSe2, cu_in_se_compounds, ["Cu", "In", "Se"], lower_lims)
+  sd = phase_diagram.StabilityDiagram(CuInSe2, cu_in_se_compounds, elements, lower_lims)
 
   regions = sd.get_regions()
   regions = [{"formula": formula, "vertices": v.vertices.tolist()} for formula, v in regions.iteritems()]
@@ -103,7 +105,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     dfe_resource_id = id_name[dfe_name]
     return (pd_resource_id, dfe_resource_id)
 
-  def setup_template_variables(self, context, data_dict):
+  def old_setup_template_variables(self, context, data_dict):
     resource = data_dict["resource"]
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
     pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
@@ -113,6 +115,30 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             'pd_resource_id': pd_resource_id,
             'dfe_resource_id': dfe_resource_id,
             'pd_params': json.dumps({}),
+            'dfe_params': json.dumps({}),
+            'dataset_id': package['id']
+            }
+  def get_pd_dfe_resource_id(self, material):
+    pass
+
+  def get_possible_elements(self, material):
+    three = ["In", "Ga"]
+    six = ["Se"]
+    if material == "chalcopyrite":
+      return {3: three, 6: six}
+    else:
+      raise Exception("Material type selected invalid: " + material)
+
+  def setup_template_variables(self, context, data_dict):
+    resource = data_dict["resource"]
+    package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
+    pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
+    return {'resource_json': json.dumps(data_dict['resource']),
+            'resource_view_json': json.dumps(data_dict['resource_view']),
+            'resource': resource,
+            'pd_resource_id': pd_resource_id,
+            'dfe_resource_id': dfe_resource_id,
+            'pd_params': json.dumps({"elements": ["Cu", "In", "Se"]}), # TODO: hardcoded
             'dfe_params': json.dumps({}),
             'dataset_id': package['id']
             }

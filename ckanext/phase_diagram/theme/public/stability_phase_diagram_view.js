@@ -19,8 +19,8 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
         // TODO: deal with padding/margins better
         var pwidth = this.el[0].offsetWidth,
             w = pwidth/2 - 50;
-        Object.assign(params.pd_params, {"width": w, "height": w})
-        Object.assign(params.dfe_params, {"width": w, "height": w})
+        Object.assign(params.pd_params, {"width": w, "height": w});
+        Object.assign(params.dfe_params, {"width": w, "height": w});
         var phase_diagram = new PhaseDiagram(phase_div_id, dfe_div_id, pd_endpoint, dfe_endpoint, params, query_data, result_parser);
         phase_diagram.init();
     }

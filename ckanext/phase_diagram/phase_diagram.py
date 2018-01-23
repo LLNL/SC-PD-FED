@@ -13,6 +13,7 @@ import re
 import numpy as np
 from collections import OrderedDict
 
+
 class Compound(object):
   def __init__(self, formula_dict, enthalpy_of_formation):
     self.formula = formula_dict
