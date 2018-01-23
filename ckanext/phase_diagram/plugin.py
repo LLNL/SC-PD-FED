@@ -23,7 +23,7 @@ def phase_diagram_view(context, data_dict):
 
   # Example ["Cu", "In", "Se"]
   # TODO: , coords, be passed in by request
-  elements = data_dict["elements"]
+  elements = data_dict["elements[]"]
   cu_in_se_compounds = phase_diagram.select_compounds(compounds, elements)
   CuInSe2 = compounds[0]
   lower_lims = [-3, -3]
@@ -138,7 +138,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             'resource': resource,
             'pd_resource_id': pd_resource_id,
             'dfe_resource_id': dfe_resource_id,
-            'elements': {"elements": ["Cu", "In", "Se"]},# TODO: hardcoded
+            'element_data': json.dumps({"elements": ["Cu", "In", "Se"]}),# TODO: hardcoded
             'pd_params': json.dumps({}),
             'dfe_params': json.dumps({}),
             'dataset_id': package['id']

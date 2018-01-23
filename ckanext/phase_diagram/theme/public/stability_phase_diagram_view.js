@@ -11,7 +11,7 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
         var query_data = {
             "pd_resource_id": this.options.pdResourceId,
             "dfe_resource_id": this.options.dfeResourceId,
-            "elements": this.options.elements,
+            "elements": this.options.elementData.elements,
         };
         var params = {
             "pd_params": this.options.pdParams,
