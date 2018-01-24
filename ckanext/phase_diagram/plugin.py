@@ -118,6 +118,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             'dfe_params': json.dumps({}),
             'dataset_id': package['id']
             }
+
   def get_pd_dfe_resource_id(self, material):
     pass
 
@@ -133,12 +134,46 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     resource = data_dict["resource"]
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
     pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
+    element_select_values = {
+      "materials": {
+        "chalcopyrite": {
+          "text": "Chalcopyrite",
+          "properties": [("formation_energy", "Formation Energy")],
+          "elements": [
+            {"in": {
+              "text": "In",
+              "values": list(range(1,7)),
+              },
+              "ga": {
+                "text": "Ga",
+                "values": list(range(1,7)),
+              }
+            },
+            {"se": {
+              "text": "Se",
+              "values": list(range(1,7)),
+              },
+            }
+          ],
+        }
+      },
+    }
+    default_selected_element_values = {
+      "material": "chalcopyrite",
+      "property": "formation_energy",
+      "elements": [("in", 2), ("se", 1),]
+    }
+    element_config_data = {"elements": ["Cu", "In", "Se"],# TODO: hardcoded
+                           "default_selected_values": default_selected_element_values,
+                           "default_values": element_select_values,
+                           }
+
     return {'resource_json': json.dumps(data_dict['resource']),
             'resource_view_json': json.dumps(data_dict['resource_view']),
             'resource': resource,
             'pd_resource_id': pd_resource_id,
             'dfe_resource_id': dfe_resource_id,
-            'element_data': json.dumps({"elements": ["Cu", "In", "Se"]}),# TODO: hardcoded
+            'element_config_data': json.dumps(element_config_data),
             'pd_params': json.dumps({}),
             'dfe_params': json.dumps({}),
             'dataset_id': package['id']
