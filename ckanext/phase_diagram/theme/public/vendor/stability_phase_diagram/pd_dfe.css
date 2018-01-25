@@ -12,3 +12,7 @@ p {
     top: 13%;
     right: 5%;
 }
+
+#pd-elements {
+    display: inline-block;
+}

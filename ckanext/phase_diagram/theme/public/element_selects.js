@@ -68,33 +68,40 @@ function create_element_num_selects($selects_div, data, selected_values) {
     var element_groups = get_material_dict(data, selected_values.material).elements;
     for(var i = 0; i<element_groups.length; i++) {
         var group_choices = element_groups[i]; // data for elements in this group that you can pick
-        var selected_ele = selected_values[i];
+        var selected_ele = selected_values.elements[i][0];
         // Find matching
-        var $ele_div = $("<div>", {class: "pd-ele-number"});
-        var $s = $("<select>", {class: "pd-ele"});
+        var $ele_div = $("<span>", {class: "pd-ele-number"});
+        var $ele = $("<select>", {class: "pd-ele"});
         for(var j=0; j<group_choices.length; j++) {
             var element_data = group_choices[j];
             var option_attrs = {value: element_data.text, text: element_data.text};
             if(element_data.text == selected_ele) {
                 option_attrs["selected"] = "selected";
+                var $num = $("<select>", {class: "pd-ele-num"});
+                var num_values = element_data.values;
             }
-            $s.append($("<option>", option_attrs));
+            $ele.append($("<option>", option_attrs));
         }
-        var $num = $("<select>", {class: "pd-ele-num"});
-        $ele_div.append($s);
+        var selected_num = selected_values.elements[i][1];
+        element_num_select($num, num_values, selected_num);
+        $ele_div.append($ele);
         $ele_div.append($num);
         $selects_div.append($ele_div);
-        element_num_select($ele_div, selected_ele);
     }
 }
 
-function element_num_select($element_number_div, nums) {
+function element_num_select($num, nums, selected_num) {
     // Change number selections
-    var $nums = $element_number_div.find(".pd-ele-num");
     // Clear and add the new numbers
-    $nums.html("");
-    for(var n in nums) {
-        $nums.append($("option", {value: n, text: n}));
+    $num.html("");
+    for(var i=0; i<nums.length; i++) {
+        var n = nums[i];
+        if(n == selected_num){
+          $num.append($("<option>", {value: n, text: n, selected:"selected"}));
+        }
+        else{
+          $num.append($("<option>", {value: n, text: n}));
+        }
     }
 }
 
