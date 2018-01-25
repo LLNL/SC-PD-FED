@@ -20,7 +20,7 @@ function init_element_selects(select_div, data, default_values, phase_diagram_in
     // Create the selects
     // material
     var $materials = $(select_div+" "+"#pd-material-type");
-    for(var i in data.materials) {
+    for(var i =0; i<data.materials.length; i++) {
         // Find matchng material
         var value = data.materials[i].material,
             text = data.materials[i].text;
@@ -46,7 +46,7 @@ function init_element_selects(select_div, data, default_values, phase_diagram_in
 }
 function get_material_dict(data, material) {
     var materials = data.materials;
-    for(var i in materials) {
+    for(var i=0; i<materials.length; i++) {
         if(materials[i].material==material){
             return materials[i];
         }
@@ -54,7 +54,7 @@ function get_material_dict(data, material) {
 }
 function create_property_select($property_select, data, selected_values) {
     var properties = get_material_dict(data, selected_values.material).properties;
-    for(var i in properties) {
+    for(var i=0; i<properties.length; i++) {
         var p = properties[i];
         if(p[0] == selected_values.property) {
             $property_select.append($("<option>", {value:p[0], text:p[1], selected:"selected"}));
@@ -72,7 +72,8 @@ function create_element_num_selects($selects_div, data, selected_values) {
         // Find matching
         var $ele_div = $("<div>", {class: "pd-ele-number"});
         var $s = $("<select>", {class: "pd-ele"});
-        for(var element_data in group_choices) {
+        for(var j=0; j<group_choices.length; j++) {
+            var element_data = group_choices[j];
             var option_attrs = {value: element_data.text, text: element_data.text};
             if(element_data.text == selected_ele) {
                 option_attrs["selected"] = "selected";
