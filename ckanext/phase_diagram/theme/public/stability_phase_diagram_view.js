@@ -17,6 +17,8 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
             "pd_params": this.options.pdParams,
             "dfe_params": this.options.dfeParams,
         };
+        // Element selects
+        init_element_selects("#pd-element-selects", this.options.elementConfigData.default_values, this.options.elementConfigData.default_selected_values);
         // TODO: deal with padding/margins better
         var pwidth = this.el[0].offsetWidth,
             w = pwidth/2 - 50;
