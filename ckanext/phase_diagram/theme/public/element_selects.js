@@ -1,4 +1,21 @@
-function init_element_selects(select_div, data, default_values) {
+function init_element_selects(select_div, data, default_values, phase_diagram_init_func) {
+    function submit($form, phase_diagram_init) {
+        // Query_data will be the values in the selects
+        var elements = [];
+        var elements_nums = [];
+        $(select_div+" "+"pd-ele-num").each(function(index, ele_num) {
+            elements.append($(this).find("#pd-ele").attr("value"));
+            elements_nums.append({ele: $(this).find("#pd-ele").attr("value"),
+                             num: $(this).find("#pd-ele-number").attr("value")});
+        });
+        var query_data = {
+            material: $(select_div+" "+"#pd-material-type").find("option[selected]").attr("value"),
+            property: $(select_div+" "+"#pd-property").find("option[selected]").attr("value"),
+            elements: elements,
+            elements_nums: elements_nums
+        };
+        phase_diagram_init(query_data);
+    }
     var $element_select_div = $(select_div+" "+"#pd-element-selects");
     // Create the selects
     // material
@@ -9,27 +26,43 @@ function init_element_selects(select_div, data, default_values) {
     }
     // property
     var $properties = $(select_div+" "+"#pd-property");
-    property_select($properties, data, default_values);
+    create_property_select($properties, data, default_values);
     // elements
     var $element_selects_div = $(select_div+" "+"#pd-element-selects");
-    property_select($element_selects_div, data, default_values);
+    create_element_num_selects($element_selects_div, data, default_values);
+    // Attach submit to button
+    var $submit_button = $(select_div+" "+"button");
+    $submit_button.on("submit", function(event) {
+        var $form = $(select_div);
+        submit($form, phase_diagram_init_func);
+    });
 }
-function property_select($property_select, data, selected_value) {
-    var properties = data.materials[selected_value.material].properties;
+function create_property_select($property_select, data, selected_values) {
+    var properties = data.materials[selected_values.material].properties;
     for(var p in properties) {
-        $property_select.append($("<option>", {value:p[0], text:p[1]}));
+        if(p[0] == selected_values.property) {
+            $property_select.append($("<option>", {value:p[0], text:p[1], selected:"selected"}));
+        }
+        else {
+            $property_select.append($("<option>", {value:p[0], text:p[1]}));
+        }
     }
 }
-function init_element_select($selects_div, data, selected_values) {
+function create_element_num_selects($selects_div, data, selected_values) {
     var element_group = data.materials[selected_values.material].elements;
     for(var i = 0; i<element_group.length; i++) {
         var group_choices = element_group[i]; // data for elements in this group that you can pick
         var selected_ele = selected_values[i];
+        // Find matching
         var ele_range = group_choices[selected_ele];
-        var $ele_div = $("<div>", {class: "pd-element-number"});
+        var $ele_div = $("<div>", {class: "pd-ele-number"});
         var $s = $("<select>", {class: "pd-ele"});
-        for(var ele in group_choices) {
-            $s.append($("<option>", {value: ele, text: group_choices[ele].text}));
+        for(var element_data in group_choices) {
+            var option_attrs = {value: element_data.text, text: element_data.text};
+            if(element_data.text == selected_ele) {
+                option_attrs["selected"] = "selected";
+            }
+            $s.append($("<option>", option_attrs));
         }
         var $num = $("<select>", {class: "pd-ele-num"});
         $ele_div.append($s);

@@ -79,6 +79,9 @@ function setup(data) {
         return feasible;
     }
 
+    // Clear divs
+    $(this.svg_div).html("");
+    $(this.dfe_svg_div).html("");
     this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, this.dfe_endpoint, this._params, this.query_data, this.result_parser);
     this.DFEDiagram.init();
 

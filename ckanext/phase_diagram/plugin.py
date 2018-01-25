@@ -21,6 +21,16 @@ def phase_diagram_view(context, data_dict):
   compounds = [[d['compound'], d['fe']] for d in data]
   compounds = phase_diagram.parse_compounds(compounds)
 
+  if data_dict.get("material", None):
+    if data_dict["material"] == "chalcopyrite":
+      assert(data_dict["property"] == "formation_energy")
+      elements = data_dict["elements[]"]
+      assert(len(elements)>1 and len(elements)<4)
+      if len(elements) == 2:
+        elements = ["Cu"] + elements
+      elements_numbers = []
+      for ele_num in data_dict["elements_nums"]:
+        ele_num.append((ele_num['ele'], ele_num['num']))
   # Example ["Cu", "In", "Se"]
   # TODO: , coords, be passed in by request
   elements = data_dict["elements[]"]
@@ -140,20 +150,21 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
           "text": "Chalcopyrite",
           "properties": [("formation_energy", "Formation Energy")],
           "elements": [
-            {"in": {
+            # Keep a list of dicts so it's ordered?
+            [{
               "text": "In",
               "values": list(range(1,7)),
               },
-              "ga": {
+              {
                 "text": "Ga",
                 "values": list(range(1,7)),
               }
-            },
-            {"se": {
+            ],
+            [{
               "text": "Se",
               "values": list(range(1,7)),
               },
-            }
+            ]
           ],
         }
       },
@@ -161,7 +172,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     default_selected_element_values = {
       "material": "chalcopyrite",
       "property": "formation_energy",
-      "elements": [("in", 2), ("se", 1),]
+      "elements": [("In", 2), ("Se", 1),]
     }
     element_config_data = {"elements": ["Cu", "In", "Se"],# TODO: hardcoded
                            "default_selected_values": default_selected_element_values,

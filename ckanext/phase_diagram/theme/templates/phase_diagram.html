@@ -13,7 +13,7 @@
        data-module-resource = "{{ h.dump_json(resource_json) }}"
        data-module-resource-view = "{{ h.dump_json(resource_view_json) }}"
        >
-     <div>
+     <form>
        <select id="pd-material-type">
          <option value="chalcopyrite">Chalcopyrite</option>
        </select>
@@ -23,7 +23,8 @@
        <select id="pd-property">
          <option value="formation_energy">Formation Energy</option>
        </select>
-     </div>
+       <button>Go</button>
+     </form>
      <div id="pd-dfe">
         <div id="phase-diagram"></div>
         <div id="defect-formation-energy-diagram">
