@@ -3,9 +3,6 @@ function init_element_selects(select_div, data, default_values) {
     // Create the selects
     // material
     var $materials = $(select_div+" "+"#pd-material-type");
-    data.materials.forEach(function(material) {
-        $materials.append($("<option>", {value:material[0], text:material[1]}))
-    });
     for(var material in data.materials) {
         $materials.append($("<option>", {value:material, text:data.materials[material].text}));
 
