@@ -54,7 +54,6 @@ function create_element_num_selects($selects_div, data, selected_values) {
         var group_choices = element_group[i]; // data for elements in this group that you can pick
         var selected_ele = selected_values[i];
         // Find matching
-        var ele_range = group_choices[selected_ele];
         var $ele_div = $("<div>", {class: "pd-ele-number"});
         var $s = $("<select>", {class: "pd-ele"});
         for(var element_data in group_choices) {
@@ -68,7 +67,7 @@ function create_element_num_selects($selects_div, data, selected_values) {
         $ele_div.append($s);
         $ele_div.append($num);
         $selects_div.append($ele_div);
-        element_num_select($ele_div, group_choices[selected_ele].text);
+        element_num_select($ele_div, selected_ele);
     }
 }
 
