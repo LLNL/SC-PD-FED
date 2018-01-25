@@ -145,8 +145,9 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
     pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
     element_select_values = {
-      "materials": {
-        "chalcopyrite": {
+      "materials": [
+        {
+          "material": "chalcopyrite",
           "text": "Chalcopyrite",
           "properties": [("formation_energy", "Formation Energy")],
           "elements": [
@@ -167,7 +168,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             ]
           ],
         }
-      },
+      ],
     }
     default_selected_element_values = {
       "material": "chalcopyrite",

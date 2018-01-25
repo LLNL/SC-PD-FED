@@ -20,9 +20,16 @@ function init_element_selects(select_div, data, default_values, phase_diagram_in
     // Create the selects
     // material
     var $materials = $(select_div+" "+"#pd-material-type");
-    for(var material in data.materials) {
-        $materials.append($("<option>", {value:material, text:data.materials[material].text}));
-
+    for(var i in data.materials) {
+        // Find matchng material
+        var value = data.materials[i].material,
+            text = data.materials[i].text;
+        if(value == default_values.material) {
+            $materials.append($("<option>", {value:value, text:text, selected:"selected"}));
+        }
+        else {
+            $materials.append($("<option>", {value:value, text:text}));
+        }
     }
     // property
     var $properties = $(select_div+" "+"#pd-property");
@@ -37,9 +44,17 @@ function init_element_selects(select_div, data, default_values, phase_diagram_in
         submit($form, phase_diagram_init_func);
     });
 }
+function get_material_dict(data, material) {
+    for(val i in data) {
+        if(data[i].material==material){
+            return data[i];
+        }
+    }
+}
 function create_property_select($property_select, data, selected_values) {
-    var properties = data.materials[selected_values.material].properties;
-    for(var p in properties) {
+    var properties = get_material_dict(data, selected_values.material).properties;
+    for(var i in properties) {
+        var p = properties[i];
         if(p[0] == selected_values.property) {
             $property_select.append($("<option>", {value:p[0], text:p[1], selected:"selected"}));
         }
@@ -49,9 +64,9 @@ function create_property_select($property_select, data, selected_values) {
     }
 }
 function create_element_num_selects($selects_div, data, selected_values) {
-    var element_group = data.materials[selected_values.material].elements;
-    for(var i = 0; i<element_group.length; i++) {
-        var group_choices = element_group[i]; // data for elements in this group that you can pick
+    var element_groups = get_material_dict(data, selected_values.material).elements;
+    for(var i = 0; i<element_groups.length; i++) {
+        var group_choices = element_groups[i]; // data for elements in this group that you can pick
         var selected_ele = selected_values[i];
         // Find matching
         var $ele_div = $("<div>", {class: "pd-ele-number"});
