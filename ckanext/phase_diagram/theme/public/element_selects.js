@@ -45,7 +45,7 @@ function init_element_selects(select_div, data, default_values, phase_diagram_in
     });
 }
 function get_material_dict(data, material) {
-    for(val i in data) {
+    for(var i in data) {
         if(data[i].material==material){
             return data[i];
         }
