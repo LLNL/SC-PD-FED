@@ -185,9 +185,7 @@ function setup_graph(data) {
     move_ifl_indicator.call(this, siflx, sifly);
 
     // TODO: dfe-labels in a separate plain div, lines in legened look bad
-    var legend_div = document.createElement("div").setAttribute("id", "dfe-labels");
-    //document.getElementsByName(this.svg_div).appendChild(legend_div);
-    d3.select(this.svg_div).append(legend_div);
+    d3.select(this.svg_div).append("div").attr("id", "dfe-labels");
     var divs_in_legend = d3.select(this.svg_div).select("#dfe-labels").append("div").selectAll("div").data(data.lines).enter()
         .append("div");
     divs_in_legend.append("span").text("____").style("color", function(d, i) {return _.colors[i % _.colors.length]});
