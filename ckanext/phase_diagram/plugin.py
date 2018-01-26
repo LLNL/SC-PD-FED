@@ -14,13 +14,8 @@ from defect_formation_diagram import DefectFormationEnergyDiagram
 #natural_number_validator = p.toolkit.get_validator('natural_number_validator')
 #Invalid = p.toolkit.Invalid
 
-
 @tk.side_effect_free
-def phase_diagram_view(context, data_dict):
-  data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
-  compounds = [[d['compound'], d['fe']] for d in data]
-  compounds = phase_diagram.parse_compounds(compounds)
-
+def select_compound(context, data_dict):
   if data_dict.get("material", None):
     if data_dict["material"] == "chalcopyrite":
       assert(data_dict["property"] == "formation_energy")
@@ -28,9 +23,32 @@ def phase_diagram_view(context, data_dict):
       assert(len(elements)>1 and len(elements)<4)
       if len(elements) == 2:
         elements = ["Cu"] + elements
-      elements_numbers = []
-      for ele_num in data_dict["elements_nums"]:
-        ele_num.append((ele_num['ele'], ele_num['num']))
+    else:
+      raise NotImplementedError()
+    elements_numbers = []
+    for ele_num in data_dict["elements_nums"]:
+      elements_numbers.append((ele_num['ele'], ele_num['num']))
+    name = "Cu"
+    for ele, num in elements_numbers:
+      name += ele
+      if num > 1:
+        name += str(num)
+    package = tk.get_action("package_show")(data_dict={"id": data_dict["package_id"]})
+    pd_resource_id, dfe_resource_id = corresponding_resource_id(name, package)
+    return {"pd_resource_id": pd_resource_id,
+            "dfe_resource_id": dfe_resource_id,
+            "elements": elements}
+  else:
+    raise Exception() # TODO: validation messages
+
+@tk.side_effect_free
+def phase_diagram_view(context, data_dict):
+  resource_id = data_dict["resource_id"]
+  data = tk.get_action("datastore_search")(data_dict={"resource_id": resource_id})["records"]
+    # Figure out the appropriate resource_id from query data
+  compounds = [[d['compound'], d['fe']] for d in data]
+  compounds = phase_diagram.parse_compounds(compounds)
+
   # Example ["Cu", "In", "Se"]
   # TODO: , coords, be passed in by request
   elements = data_dict["elements[]"]
@@ -86,6 +104,13 @@ def defect_fect_formation_diagram_view(context, data_dict):
           }
   return data
 
+def corresponding_resource_id(base_name, package):
+  pd_name, dfe_name = (base_name+"_pd_data.csv", base_name+"_dfe_data.csv")
+  id_name = {r["name"]: r["id"] for r in package["resources"]}
+  pd_resource_id = id_name[pd_name]
+  dfe_resource_id = id_name[dfe_name]
+  return (pd_resource_id, dfe_resource_id)
+
 class PhaseDiagramPlugin(p.SingletonPlugin):
   '''
   This base class for the Recline view extensions.
@@ -103,22 +128,10 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     tk.add_template_directory(config, 'theme/templates')
     tk.add_resource('theme/public', 'ckanext-spdview')
 
-  def corresponding_resource_names(self, resource):
-    name = resource["name"]
-    name = name.split(" ", 1)[0]
-    return (name+"_pd_data.csv", name+"_dfe_data.csv")
-
-  def corresponding_resource_id(self, resource, package):
-    pd_name, dfe_name = self.corresponding_resource_names(resource)
-    id_name = {r["name"]: r["id"] for r in package["resources"]}
-    pd_resource_id = id_name[pd_name]
-    dfe_resource_id = id_name[dfe_name]
-    return (pd_resource_id, dfe_resource_id)
-
   def old_setup_template_variables(self, context, data_dict):
     resource = data_dict["resource"]
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
-    pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
+    pd_resource_id, dfe_resource_id = corresponding_resource_id(resource["name"], package)
     return {'resource_json': json.dumps(data_dict['resource']),
             'resource_view_json': json.dumps(data_dict['resource_view']),
             'resource': resource,
@@ -143,6 +156,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
   def setup_template_variables(self, context, data_dict):
     resource = data_dict["resource"]
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
+    base_name = resource["name"].split(" ",1)[0]
     pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
     element_select_values = {
       "materials": [
@@ -188,7 +202,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             'element_config_data': json.dumps(element_config_data),
             'pd_params': json.dumps({}),
             'dfe_params': json.dumps({}),
-            'dataset_id': package['id']
+            'package_id': package['id']
             }
 
   def view_template(self, context, data_dict):
@@ -221,5 +235,6 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     actions = {
       "semiconductor_phase_diagram": phase_diagram_view,
       "semiconductor_dfe_diagram": defect_fect_formation_diagram_view,
+      "semiconductor_element_select": select_compound,
     }
     return actions

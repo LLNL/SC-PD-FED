@@ -1,4 +1,4 @@
-function init_element_selects(select_div, data, default_values, phase_diagram_init_func) {
+function init_element_selects(select_div, data, default_values, endpoint, phase_diagram_init_func) {
     function submit($form, phase_diagram_init) {
         // Query_data will be the values in the selects
         var elements = [];
@@ -14,7 +14,22 @@ function init_element_selects(select_div, data, default_values, phase_diagram_in
             elements: elements,
             elements_nums: elements_nums
         };
-        phase_diagram_init(query_data);
+        console.log("Submitting element selections");
+        $.ajax({
+           content: this,
+           type: "GET",
+           contentType: "application/json",
+           dataType: "json",
+           url: endpoint,
+            async: true,
+            data: query_data,
+            success: function(data) {
+                phase_diagram_init(query_data);
+            },
+            error: function(result){
+                console.log("Ajax error: ", result)
+            }
+        });
     }
     var $element_select_div = $(select_div+" "+"#pd-element-selects");
     // Create the selects
