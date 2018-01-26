@@ -157,7 +157,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     resource = data_dict["resource"]
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
     base_name = resource["name"].split(" ",1)[0]
-    pd_resource_id, dfe_resource_id = self.corresponding_resource_id(resource, package)
+    pd_resource_id, dfe_resource_id = corresponding_resource_id(base_name, package)
     element_select_values = {
       "materials": [
         {
