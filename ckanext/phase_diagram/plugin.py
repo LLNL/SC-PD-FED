@@ -26,8 +26,11 @@ def select_compound(context, data_dict):
     else:
       raise NotImplementedError()
     elements_numbers = []
-    for ele_num in data_dict["elements_nums"]:
-      elements_numbers.append((ele_num['ele'], ele_num['num']))
+    # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
+    d_element_nums = filter(lambda x: x.startswith("elements_nums["), data_dict.keys())
+    for i in range(len(d_element_nums)):
+      ele_num = data_dict["elements_nums["+str(i)+"][]"]
+      elements_numbers.append((ele_num[0], ele_num[1]))
     name = "Cu"
     for ele, num in elements_numbers:
       name += ele
@@ -51,6 +54,7 @@ def phase_diagram_view(context, data_dict):
 
   # Example ["Cu", "In", "Se"]
   # TODO: , coords, be passed in by request
+  # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
   elements = data_dict["elements[]"]
   cu_in_se_compounds = phase_diagram.select_compounds(compounds, elements)
   CuInSe2 = compounds[0]
@@ -187,7 +191,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     default_selected_element_values = {
       "material": "chalcopyrite",
       "property": "formation_energy",
-      "elements": [("In", 2), ("Se", 1),]
+      "elements": [("In", 1), ("Se", 2),]
     }
     element_config_data = {"elements": ["Cu", "In", "Se"],# TODO: hardcoded
                            "default_selected_values": default_selected_element_values,

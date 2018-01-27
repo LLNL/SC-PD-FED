@@ -3,10 +3,11 @@ function init_element_selects(select_div, data, default_values, endpoint, phase_
         // Query_data will be the values in the selects
         var elements = [];
         var elements_nums = [];
-        $(select_div+" "+"pd-ele-num").each(function(index, ele_num) {
-            elements.append($(this).find("#pd-ele").attr("value"));
-            elements_nums.append({ele: $(this).find("#pd-ele").attr("value"),
-                             num: $(this).find("#pd-ele-number").attr("value")});
+        $form.find(".pd-element-number").each(function(index, ele_num) {
+            var ele = $(this).find(".pd-ele option[selected]").attr("value");
+            var num = $(this).find(".pd-ele-num option[selected]").attr("value");
+            elements.push(ele);
+            elements_nums.push([ele, num]);
         });
         var query_data = {
             material: $(select_div+" "+"#pd-material-type").find("option[selected]").attr("value"),
@@ -54,7 +55,8 @@ function init_element_selects(select_div, data, default_values, endpoint, phase_
     create_element_num_selects($element_selects_div, data, default_values);
     // Attach submit to button
     var $submit_button = $(select_div+" "+"button");
-    $submit_button.on("submit", function(event) {
+    $submit_button.on("click", function(event) { // TODO: submit not click. Something's wrong with the button
+        event.preventDefault();
         var $form = $(select_div);
         submit($form, phase_diagram_init_func);
     });
@@ -85,7 +87,7 @@ function create_element_num_selects($selects_div, data, selected_values) {
         var group_choices = element_groups[i]; // data for elements in this group that you can pick
         var selected_ele = selected_values.elements[i][0];
         // Find matching
-        var $ele_div = $("<span>", {class: "pd-ele-number"});
+        var $ele_div = $("<span>", {class: "pd-element-number"});
         var $ele = $("<select>", {class: "pd-ele"});
         for(var j=0; j<group_choices.length; j++) {
             var element_data = group_choices[j];

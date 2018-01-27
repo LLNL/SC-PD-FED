@@ -7,7 +7,7 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
             dfe_div_id = "#defect-formation-energy-diagram",
             pd_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_phase_diagram'),
             dfe_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_dfe_diagram'),
-            element_select_endpoint = this.sandbox.client.url('/api/action/' + 'select_compound');
+            element_select_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_element_select');
 
         var query_data = {
             "pd_resource_id": this.options.pdResourceId,
