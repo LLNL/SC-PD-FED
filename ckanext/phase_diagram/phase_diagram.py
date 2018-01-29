@@ -53,7 +53,7 @@ class Compound(object):
   def from_list(l):
     """list/tuple like ["CuInSe2", 0.6]"""
     d = Compound.parse_string_to_dict(l[0])
-    return Compound(d, l[1])
+    return Compound(d, float(l[1]))
 
   @staticmethod
   def from_string(s):
@@ -223,12 +223,15 @@ def parse_compounds(compounds):
   :type compounds: List[OrderedDict] or List[str]
   """
   compound_list = []
+  # Make sure to deal with "" or [None, None], for example. In case the data comes with extraneous empty values...
   if isinstance(compounds[0], str):
     for c in compounds:
-      compound_list.append(Compound.from_string(c))
+      if c.strip():
+        compound_list.append(Compound.from_string(c))
   elif isinstance(compounds[0], tuple) or isinstance(compounds[0], list):
     for c in compounds:
-      compound_list.append(Compound.from_list(c))
+      if any(c):
+        compound_list.append(Compound.from_list(c))
   else:
     for c in compounds:
       h = float(c["dHf"])

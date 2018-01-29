@@ -7,6 +7,10 @@ import itertools
 
 class DefectFormationEnergyDiagram(object):
   def __init__(self, data, chemical_potentials, charges, fermi_energy_bounds):
+    # data is a dict with defect name as keys, and [(charge coefs), and (defect formation energies)] as the values
+    for name, coefs_dfes in data.iteritems():
+      data[name] = [map(int, coefs_dfes[0]),
+              map(lambda x: float(x) if x is not None else x, coefs_dfes[1])]
     self.data = data
     self.chemical_potentials = np.array(chemical_potentials)
     self.charges = charges

@@ -18,10 +18,6 @@ def select_compound(context, data_dict):
   if data_dict.get("material", None):
     if data_dict["material"] == "chalcopyrite":
       assert(data_dict["property"] == "formation_energy")
-      elements = data_dict["elements[]"]
-      assert(len(elements)>1 and len(elements)<4)
-      if len(elements) == 2:
-        elements = ["Cu"] + elements
     else:
       raise NotImplementedError()
     elements_numbers = parse_ele_num(data_dict)
@@ -35,7 +31,7 @@ def select_compound(context, data_dict):
     pd_resource_id, dfe_resource_id = corresponding_resource_id(name, package)
     return {"pd_resource_id": pd_resource_id,
             "dfe_resource_id": dfe_resource_id,
-            "elements": elements}
+            "elements_nums": elements_numbers}
   else:
     raise Exception() # TODO: validation messages
 
@@ -97,11 +93,11 @@ def defect_fect_formation_diagram_view(context, data_dict):
   data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
   dfes = {}
   for d in data:
-    dfes[d["defect"]] = [(d["c1"], d["c2"], d["c3"]), map(lambda k: d.get(k, None), ["e1", "e2", "e3", "e4", "e5", "e6", "e7"])]
+    dfes[d["defect"]] = [map(int, (d["c1"], d["c2"], d["c3"])), map(lambda float(k): d.get(k, None), ["e1", "e2", "e3", "e4", "e5", "e6", "e7"])]
 
   charges = [3, 2, 1, 0, -1, -2, -3]
   # TODO: get default mu, fermi*lim, dfe_lim from somewhere else
-  defaults_mu = [-0.5, -1.87]
+  defaults_mu = [-0.7, -0.7]
   # TODO: use validator
   mu_cu = float(data_dict.get("x", defaults_mu[0]))
   mu_in = float(data_dict.get("y", defaults_mu[1]))

@@ -1,4 +1,4 @@
-function init_element_selects(select_div, data, default_values, endpoint, query_data, phase_diagram_init_func) {
+function init_element_selects(select_div, data, default_values, endpoint, query_data, phase_diagram_init_func, result_parser) {
     function submit($form, phase_diagram_init) {
         // Query_data will be the values in the selects
         var elements = [];
@@ -25,6 +25,9 @@ function init_element_selects(select_div, data, default_values, endpoint, query_
             async: true,
             data: query_data,
             success: function(phase_diagram_query_data) {
+                if(result_parser) {
+                  phase_diagram_query_data = result_parser(phase_diagram_query_data);
+                }
                 phase_diagram_init(phase_diagram_query_data);
             },
             error: function(result){

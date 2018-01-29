@@ -31,7 +31,8 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
             this.options.elementConfigData.default_selected_values,
             element_select_endpoint,
             {"package_id": this.options.packageId},
-            phase_diagram_init_using_query_data);
+            phase_diagram_init_using_query_data,
+            result_parser);
         // TODO: deal with padding/margins better
         var pwidth = this.el[0].offsetWidth,
             w = pwidth/2 - 50;
