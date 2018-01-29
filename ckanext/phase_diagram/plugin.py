@@ -13,7 +13,6 @@ from defect_formation_diagram import DefectFormationEnergyDiagram
 #ignore_empty = p.toolkit.get_validator('ignore_empty')
 #natural_number_validator = p.toolkit.get_validator('natural_number_validator')
 #Invalid = p.toolkit.Invalid
-
 @tk.side_effect_free
 def select_compound(context, data_dict):
   if data_dict.get("material", None):
@@ -25,15 +24,11 @@ def select_compound(context, data_dict):
         elements = ["Cu"] + elements
     else:
       raise NotImplementedError()
-    elements_numbers = []
-    # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
-    d_element_nums = filter(lambda x: x.startswith("elements_nums["), data_dict.keys())
-    for i in range(len(d_element_nums)):
-      ele_num = data_dict["elements_nums["+str(i)+"][]"]
-      elements_numbers.append((ele_num[0], ele_num[1]))
-    name = "Cu"
+    elements_numbers = parse_ele_num(data_dict)
+    name = ""
     for ele, num in elements_numbers:
       name += ele
+      num = int(num)
       if num > 1:
         name += str(num)
     package = tk.get_action("package_show")(data_dict={"id": data_dict["package_id"]})
@@ -55,11 +50,18 @@ def phase_diagram_view(context, data_dict):
   # Example ["Cu", "In", "Se"]
   # TODO: , coords, be passed in by request
   # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
-  elements = data_dict["elements[]"]
-  cu_in_se_compounds = phase_diagram.select_compounds(compounds, elements)
-  CuInSe2 = compounds[0]
+  elements_nums = parse_ele_num(data_dict)
+  elements = [en[0] for en in elements_nums]
+  name = ""
+  for ele, num in elements_nums:
+    name += ele
+    num = int(num)
+    if num > 1:
+      name += str(num)
+  specified_compounds = phase_diagram.select_compounds(compounds, elements)
+  specified_compound = filter(lambda c: c.formula == name, specified_compounds)
   lower_lims = [-3, -3]
-  sd = phase_diagram.StabilityDiagram(CuInSe2, cu_in_se_compounds, elements, lower_lims)
+  sd = phase_diagram.StabilityDiagram(specified_compound, specified_compounds, elements, lower_lims)
 
   regions = sd.get_regions()
   regions = [{"formula": formula, "vertices": v.vertices.tolist()} for formula, v in regions.iteritems()]
@@ -75,6 +77,16 @@ def phase_diagram_view(context, data_dict):
           "y_label": "ΔμIn eV"
           }
   return data
+
+def parse_ele_num(data_dict):
+  # Parse the flattened list of lists flattened curtosy of CKAN's controller.api._get_request_data
+  elements_numbers = []
+  # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
+  d_element_nums = filter(lambda x: x.startswith("elements_nums["), data_dict.keys())
+  for i in range(len(d_element_nums)):
+    ele_num = data_dict["elements_nums["+str(i)+"][]"]
+    elements_numbers.append((ele_num[0], int(ele_num[1])))
+  return elements_numbers
 
 @tk.side_effect_free
 def defect_fect_formation_diagram_view(context, data_dict):
@@ -170,17 +182,17 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
           "properties": [("formation_energy", "Formation Energy")],
           "elements": [
             # Keep a list of dicts so it's ordered?
-            [{
-              "text": "In",
+            [{"text": "Cu",
+              "values": [1]},
+            ],
+            [{ "text": "In",
               "values": list(range(1,7)),
               },
-              {
-                "text": "Ga",
+              { "text": "Ga",
                 "values": list(range(1,7)),
               }
             ],
-            [{
-              "text": "Se",
+            [{ "text": "Se",
               "values": list(range(1,7)),
               },
             ]
@@ -191,10 +203,9 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     default_selected_element_values = {
       "material": "chalcopyrite",
       "property": "formation_energy",
-      "elements": [("In", 1), ("Se", 2),]
+      "elements_nums": [("Cu", 1), ("In", 1), ("Se", 2),]
     }
-    element_config_data = {"elements": ["Cu", "In", "Se"],# TODO: hardcoded
-                           "default_selected_values": default_selected_element_values,
+    element_config_data = { "default_selected_values": default_selected_element_values,
                            "default_values": element_select_values,
                            }
 

@@ -9,10 +9,12 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
             dfe_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_dfe_diagram'),
             element_select_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_element_select');
 
+        var pdId = this.options.pdResourceId,
+            dfeId = this.options.dfeResourceId;
         var query_data = {
-            "pd_resource_id": this.options.pdResourceId,
-            "dfe_resource_id": this.options.dfeResourceId,
-            "elements": this.options.elementConfigData.elements,
+            "pd_resource_id": pdId,
+            "dfe_resource_id": dfeId,
+            "elements_nums": this.options.elementConfigData.default_selected_values.elements_nums,
         };
         var params = {
             "pd_params": this.options.pdParams,
@@ -21,6 +23,8 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
         // Element selects
         // Function to execute on submit
         function phase_diagram_init_using_query_data(query_data) {
+            Object.assign(query_data, {"pd_resource_id": pdId,
+                                       "dfe_resource_id": dfeId,});
             var phase_diagram = new PhaseDiagram(phase_div_id, dfe_div_id, pd_endpoint, dfe_endpoint, params, query_data, result_parser);
             phase_diagram.init();
         }
@@ -28,7 +32,7 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
             this.options.elementConfigData.default_values,
             this.options.elementConfigData.default_selected_values,
             element_select_endpoint,
-            {"package_id": this.options.package_id},
+            {"package_id": this.options.packageId},
             phase_diagram_init_using_query_data);
         // TODO: deal with padding/margins better
         var pwidth = this.el[0].offsetWidth,

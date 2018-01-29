@@ -4,8 +4,8 @@ function init_element_selects(select_div, data, default_values, endpoint, query_
         var elements = [];
         var elements_nums = [];
         $form.find(".pd-element-number").each(function(index, ele_num) {
-            var ele = $(this).find(".pd-ele option[selected]").attr("value");
-            var num = $(this).find(".pd-ele-num option[selected]").attr("value");
+            var ele = $(this).find(".pd-ele").val();
+            var num = $(this).find(".pd-ele-num").val();
             elements.push(ele);
             elements_nums.push([ele, num]);
         });
@@ -86,7 +86,7 @@ function create_element_num_selects($selects_div, data, selected_values) {
     var element_groups = get_material_dict(data, selected_values.material).elements;
     for(var i = 0; i<element_groups.length; i++) {
         var group_choices = element_groups[i]; // data for elements in this group that you can pick
-        var selected_ele = selected_values.elements[i][0];
+        var selected_ele = selected_values.elements_nums[i][0];
         // Find matching
         var $ele_div = $("<span>", {class: "pd-element-number"});
         var $ele = $("<select>", {class: "pd-ele"});
@@ -100,7 +100,7 @@ function create_element_num_selects($selects_div, data, selected_values) {
             }
             $ele.append($("<option>", option_attrs));
         }
-        var selected_num = selected_values.elements[i][1];
+        var selected_num = selected_values.elements_nums[i][1];
         element_num_select($num, num_values, selected_num);
         $ele_div.append($ele);
         $ele_div.append($num);
