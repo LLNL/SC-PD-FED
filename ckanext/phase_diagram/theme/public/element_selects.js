@@ -1,4 +1,4 @@
-function init_element_selects(select_div, data, default_values, endpoint, phase_diagram_init_func) {
+function init_element_selects(select_div, data, default_values, endpoint, query_data, phase_diagram_init_func) {
     function submit($form, phase_diagram_init) {
         // Query_data will be the values in the selects
         var elements = [];
@@ -9,12 +9,13 @@ function init_element_selects(select_div, data, default_values, endpoint, phase_
             elements.push(ele);
             elements_nums.push([ele, num]);
         });
-        var query_data = {
+        var qd = {
             material: $(select_div+" "+"#pd-material-type").find("option[selected]").attr("value"),
             property: $(select_div+" "+"#pd-property").find("option[selected]").attr("value"),
             elements: elements,
             elements_nums: elements_nums
         };
+        $.extend(query_data, qd);
         console.log("Submitting element selections");
         $.ajax({
            content: this,
