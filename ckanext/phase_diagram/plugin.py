@@ -41,12 +41,6 @@ def select_compound(context, data_dict):
 
 @tk.side_effect_free
 def phase_diagram_view(context, data_dict):
-  resource_id = data_dict["resource_id"]
-  data = tk.get_action("datastore_search")(data_dict={"resource_id": resource_id})["records"]
-    # Figure out the appropriate resource_id from query data
-  compounds = [[d['compound'], d['fe']] for d in data]
-  compounds = phase_diagram.parse_compounds(compounds)
-
   # Example ["Cu", "In", "Se"]
   # TODO: , coords, be passed in by request
   # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
@@ -58,6 +52,16 @@ def phase_diagram_view(context, data_dict):
     num = int(num)
     if num > 1:
       name += str(num)
+  if data_dict.get("resource_id", None):
+    pd_resource_id = data_dict["resource_id"]
+  else:
+    package = tk.get_action("package_show")(data_dict={"id": data_dict["package_id"]})
+    pd_resource_id, _ = corresponding_resource_id(name, package)
+  data = tk.get_action("datastore_search")(data_dict={"resource_id": pd_resource_id})["records"]
+    # Figure out the appropriate resource_id from query data
+  compounds = [[d['compound'], d['fe']] for d in data]
+  compounds = phase_diagram.parse_compounds(compounds)
+
   specified_compounds = phase_diagram.select_compounds(compounds, elements)
   specified_compound = filter(lambda c: c.formula == name, specified_compounds)
   lower_lims = [-3, -3]

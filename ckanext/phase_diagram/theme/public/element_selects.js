@@ -12,7 +12,6 @@ function init_element_selects(select_div, data, default_values, endpoint, query_
         var qd = {
             material: $(select_div+" "+"#pd-material-type").find("option[selected]").attr("value"),
             property: $(select_div+" "+"#pd-property").find("option[selected]").attr("value"),
-            elements: elements,
             elements_nums: elements_nums
         };
         $.extend(query_data, qd);
@@ -25,8 +24,8 @@ function init_element_selects(select_div, data, default_values, endpoint, query_
            url: endpoint,
             async: true,
             data: query_data,
-            success: function(data) {
-                phase_diagram_init(query_data);
+            success: function(phase_diagram_query_data) {
+                phase_diagram_init(phase_diagram_query_data);
             },
             error: function(result){
                 console.log("Ajax error: ", result)
