@@ -93,7 +93,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
   data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
   dfes = {}
   for d in data:
-    dfes[d["defect"]] = [map(int, (d["c1"], d["c2"], d["c3"])), map(lambda float(k): d.get(k, None), ["e1", "e2", "e3", "e4", "e5", "e6", "e7"])]
+    dfes[d["defect"]] = [map(int, (d["c1"], d["c2"], d["c3"])), map(lambda k: float(k) if d.get(k, None) is not None else k, ["e1", "e2", "e3", "e4", "e5", "e6", "e7"])]
 
   charges = [3, 2, 1, 0, -1, -2, -3]
   # TODO: get default mu, fermi*lim, dfe_lim from somewhere else
