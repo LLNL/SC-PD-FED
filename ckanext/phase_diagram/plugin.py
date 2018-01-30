@@ -25,10 +25,11 @@ def select_compound(context, data_dict):
     elements_numbers = parse_ele_num(data_dict)
     name = ""
     for ele, num in elements_numbers:
-      name += ele
       num = int(num)
-      if num > 1:
-        name += str(num)
+      if num > 0:
+        name += ele
+        if num > 1:
+          name += str(num)
     if name not in ["CuInSe2", "CuGaSe2"]:
       return {"success": False,
           "msg": "Selection not supported, only CuInSe2 and CuGaSe2 currently supported"}
@@ -48,10 +49,11 @@ def phase_diagram_view(context, data_dict):
   elements = [en[0] for en in elements_nums]
   name = ""
   for ele, num in elements_nums:
-    name += ele
     num = int(num)
-    if num > 1:
-      name += str(num)
+    if num > 0:
+      name += ele
+      if num > 1:
+        name += str(num)
   if data_dict.get("resource_id", None):
     pd_resource_id = data_dict["resource_id"]
   else:
@@ -67,7 +69,7 @@ def phase_diagram_view(context, data_dict):
       compound_hf = c.hf
       break
   specified_compounds = phase_diagram.select_compounds(compounds, elements)
-  specified_compound = filter(lambda c: c.formula == name, specified_compounds)
+  specified_compound = filter(lambda c: str(c) == name, specified_compounds)
   lower_lims = [-3, -3]
   sd = phase_diagram.StabilityDiagram(specified_compound, specified_compounds, elements, lower_lims)
 
@@ -206,14 +208,14 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
               "values": [1]},
             ],
             [{ "text": "In",
-              "values": list(range(1,7)),
+              "values": list(range(1,3)),
               },
               { "text": "Ga",
-                "values": list(range(1,7)),
+                "values": list(range(1,3)),
               }
             ],
             [{ "text": "Se",
-              "values": list(range(1,7)),
+              "values": list(range(1,3)),
               },
             ]
           ],
