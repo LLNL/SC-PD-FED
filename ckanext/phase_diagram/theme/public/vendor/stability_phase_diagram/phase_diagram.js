@@ -82,7 +82,8 @@ function setup(data) {
     // Clear divs
     $(this.svg_div).html("");
     $(this.dfe_svg_div).html("");
-    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, this.dfe_endpoint, this._params, this.query_data, this.result_parser);
+    this.DFEDiagram = new DFEDiagram(this.dfe_svg_div, data.default_coord, data.compound_formation_energy,
+                                    this.dfe_endpoint, this._params, this.query_data, this.result_parser);
     this.DFEDiagram.init();
 
     var margin = this.params.margin,

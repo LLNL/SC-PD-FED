@@ -3,9 +3,10 @@
 
 var self = this;
 
-this.DFEDiagram = function(svg_div, chemical_potentials_coords, endpoint, params, query_data, result_parser) {
+this.DFEDiagram = function(svg_div, chemical_potentials_coords, compound_formation_energy, endpoint, params, query_data, result_parser) {
     this.svg_div = svg_div;
     this.chemical_potential = chemical_potentials_coords;
+    this.comopund_formation_energy = compound_formation_energy;
     this.endpoint = endpoint;
     if(query_data.dfe_resource_id)
       query_data["resource_id"] = query_data["dfe_resource_id"];
@@ -58,7 +59,7 @@ DFEDiagram.prototype.init = function() {
         dataType: "json",
         url: this.endpoint,
         async: true,
-        data: $.extend({}, this.chemical_potential, this.query_data),
+        data: setup_query_data(),
         success: function(data) {
             if(this.result_parser) {
               data = this.result_parser(data);
@@ -81,7 +82,7 @@ DFEDiagram.prototype.update = function(coords) {
         dataType: "json",
         url: this.endpoint,
         async: true,
-        data: $.extend({}, this.chemical_potential, this.query_data),
+        data: setup_query_data(),
         success: function(data) {
           if(this.result_parser) {
             data = this.result_parser(data);
@@ -92,6 +93,10 @@ DFEDiagram.prototype.update = function(coords) {
             console.log("Ajax error: ", result)
         }
     })
+};
+
+function setup_query_data() {
+    return $.extend({}, this.chemical_potential, this.comopund_formation_energy, this.query_data);
 }
 
 function setup_graph(data) {

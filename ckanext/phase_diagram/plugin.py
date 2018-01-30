@@ -57,7 +57,11 @@ def phase_diagram_view(context, data_dict):
     # Figure out the appropriate resource_id from query data
   compounds = [[d['compound'], d['fe']] for d in data]
   compounds = phase_diagram.parse_compounds(compounds)
-
+  # Formation energy of the specified compound
+  for c in compounds:
+    if c.formula == name:
+      compound_hf = c.hf
+      break
   specified_compounds = phase_diagram.select_compounds(compounds, elements)
   specified_compound = filter(lambda c: c.formula == name, specified_compounds)
   lower_lims = [-3, -3]
@@ -74,7 +78,8 @@ def phase_diagram_view(context, data_dict):
           "bounds": [[-3, 0], [-3, 0]],
           "default_coord": default_coord,
           "x_label": "ΔμCu eV",
-          "y_label": "ΔμIn eV"
+          "y_label": "ΔμIn eV",
+          "compound_formation_energy": compound_hf,
           }
   return data
 
@@ -99,10 +104,21 @@ def defect_fect_formation_diagram_view(context, data_dict):
   # TODO: get default mu, fermi*lim, dfe_lim from somewhere else
   defaults_mu = [-0.7, -0.7]
   # TODO: use validator
-  mu_cu = float(data_dict.get("x", defaults_mu[0]))
-  mu_in = float(data_dict.get("y", defaults_mu[1]))
-  mu_se = (-2.37 - mu_cu - mu_in) / 2.0
-  chemical_potentials = [mu_cu, mu_in, mu_se]
+  # Example, CuInSe2, mu1 -> Cu, mu2 -> In, mu3 -> Se2, c1=c2=1, c3=2
+  elements_numbers = parse_ele_num(data_dict)
+  # TODO: make this deal with when the unknown chemical isn't always the last
+  chemical_potentials = [None]*len(elements_numbers)#["chemical_potentials[]"] # Does nothing rn
+  compound_formation_energy = data_dict["compound_formation_energy"]
+  c = []
+  #mus = []
+  for ele_num, mu in zip(elements_numbers, chemical_potentials):
+    c.append(ele_num[1])
+    #mus.append(mu)
+  mu1 = float(data_dict.get("x", defaults_mu[0]))
+  mu2 = float(data_dict.get("y", defaults_mu[1]))
+  mu3 = (compound_formation_energy - c[0]*mu1 - c[1]*mu2) / c[2]
+  # example, mu_se = (-2.37 - mu_cu - mu_in) / 2
+  chemical_potentials = [mu1, mu2, mu3]
   fermi_energy_lim = [0, 1]
   fermi_energy_axis_lim = [-0.2, 2]
   dfe_lim = [-0.7, 4]
