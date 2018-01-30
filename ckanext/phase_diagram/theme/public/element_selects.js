@@ -28,12 +28,21 @@ function init_element_selects(select_div, data, default_values, endpoint, query_
                 if(result_parser) {
                   phase_diagram_query_data = result_parser(phase_diagram_query_data);
                 }
-                phase_diagram_init(phase_diagram_query_data);
+                if(phase_diagram_query_data.success === false) {
+                  validation_msg(phase_diagram_query_data.msg);
+                }
+                else {
+                  phase_diagram_init(phase_diagram_query_data);
+                  validation_msg("");
+                }
             },
             error: function(result){
-                console.log("Ajax error: ", result)
+                console.log("element_select submit Ajax error: ", result)
             }
         });
+    }
+    function validation_msg(string) {
+      $(select_div).find("#pd-elements-msg").text(string);
     }
     var $element_select_div = $(select_div+" "+"#pd-element-selects");
     // Create the selects

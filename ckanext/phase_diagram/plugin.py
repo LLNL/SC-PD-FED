@@ -17,7 +17,9 @@ from defect_formation_diagram import DefectFormationEnergyDiagram
 def select_compound(context, data_dict):
   if data_dict.get("material", None):
     if data_dict["material"] == "chalcopyrite":
-      assert(data_dict["property"] == "formation_energy")
+      if data_dict["property"] != "formation_energy":
+        return {"success": False,
+            "msg": "Only formation energy supported"}
     else:
       raise NotImplementedError()
     elements_numbers = parse_ele_num(data_dict)
@@ -27,14 +29,16 @@ def select_compound(context, data_dict):
       num = int(num)
       if num > 1:
         name += str(num)
+    if name not in ["CuInSe2", "CuGaSe2"]:
+      return {"success": False,
+          "msg": "Selection not supported, only CuInSe2 and CuGaSe2 currently supported"}
     package = tk.get_action("package_show")(data_dict={"id": data_dict["package_id"]})
     pd_resource_id, dfe_resource_id = corresponding_resource_id(name, package)
     return {"pd_resource_id": pd_resource_id,
             "dfe_resource_id": dfe_resource_id,
             "elements_nums": elements_numbers}
   else:
-    raise Exception() # TODO: validation messages
-
+    raise Exception()
 @tk.side_effect_free
 def phase_diagram_view(context, data_dict):
   # Example ["Cu", "In", "Se"]
@@ -59,7 +63,7 @@ def phase_diagram_view(context, data_dict):
   compounds = phase_diagram.parse_compounds(compounds)
   # Formation energy of the specified compound
   for c in compounds:
-    if c.formula == name:
+    if str(c) == name:
       compound_hf = c.hf
       break
   specified_compounds = phase_diagram.select_compounds(compounds, elements)
@@ -98,7 +102,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
   data = tk.get_action("datastore_search")(data_dict={"resource_id": data_dict["resource_id"]})["records"]
   dfes = {}
   for d in data:
-    dfes[d["defect"]] = [map(int, (d["c1"], d["c2"], d["c3"])), map(lambda k: float(k) if d.get(k, None) is not None else k, ["e1", "e2", "e3", "e4", "e5", "e6", "e7"])]
+    dfes[d["defect"]] = [map(int, (d["c1"], d["c2"], d["c3"])), map(lambda k: float(d[k]) if d.get(k, None) is not None else None, ["e1", "e2", "e3", "e4", "e5", "e6", "e7"])]
 
   charges = [3, 2, 1, 0, -1, -2, -3]
   # TODO: get default mu, fermi*lim, dfe_lim from somewhere else
@@ -108,7 +112,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
   elements_numbers = parse_ele_num(data_dict)
   # TODO: make this deal with when the unknown chemical isn't always the last
   chemical_potentials = [None]*len(elements_numbers)#["chemical_potentials[]"] # Does nothing rn
-  compound_formation_energy = data_dict["compound_formation_energy"]
+  compound_formation_energy = float(data_dict["compound_formation_energy"])
   c = []
   #mus = []
   for ele_num, mu in zip(elements_numbers, chemical_potentials):
@@ -119,7 +123,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
   mu3 = (compound_formation_energy - c[0]*mu1 - c[1]*mu2) / c[2]
   # example, mu_se = (-2.37 - mu_cu - mu_in) / 2
   chemical_potentials = [mu1, mu2, mu3]
-  fermi_energy_lim = [0, 1]
+  fermi_energy_lim = [0, 1.6]
   fermi_energy_axis_lim = [-0.2, 2]
   dfe_lim = [-0.7, 4]
 
@@ -129,7 +133,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
   lines = [{"label": k, "vertices": v.tolist()} for k, v in vert_dict.iteritems()]
   data = {"lines": lines,
           "bounds": [fermi_energy_axis_lim, dfe_lim],
-          "minor_bounds": [[0, 1], [0]],  # little gray lines
+          "minor_bounds": [fermi_energy_lim, [0]],  # little gray lines
           "intrinsic_fermi_level": ifl, #[x, y]
           "x_label": "Fermi energy [eV]",
           "y_label": "Formation energy [eV]",
@@ -195,7 +199,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
         {
           "material": "chalcopyrite",
           "text": "Chalcopyrite",
-          "properties": [("formation_energy", "Formation Energy")],
+          "properties": [("formation_energy", "Formation Energy"), ("band_gap", "Band Gap")],
           "elements": [
             # Keep a list of dicts so it's ordered?
             [{"text": "Cu",

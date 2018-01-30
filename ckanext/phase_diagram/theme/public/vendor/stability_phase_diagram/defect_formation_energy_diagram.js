@@ -6,7 +6,7 @@ var self = this;
 this.DFEDiagram = function(svg_div, chemical_potentials_coords, compound_formation_energy, endpoint, params, query_data, result_parser) {
     this.svg_div = svg_div;
     this.chemical_potential = chemical_potentials_coords;
-    this.comopund_formation_energy = compound_formation_energy;
+    this.compound_formation_energy = compound_formation_energy;
     this.endpoint = endpoint;
     if(query_data.dfe_resource_id)
       query_data["resource_id"] = query_data["dfe_resource_id"];
@@ -59,7 +59,7 @@ DFEDiagram.prototype.init = function() {
         dataType: "json",
         url: this.endpoint,
         async: true,
-        data: setup_query_data(),
+        data: setup_query_data(this),
         success: function(data) {
             if(this.result_parser) {
               data = this.result_parser(data);
@@ -82,7 +82,7 @@ DFEDiagram.prototype.update = function(coords) {
         dataType: "json",
         url: this.endpoint,
         async: true,
-        data: setup_query_data(),
+        data: setup_query_data(this),
         success: function(data) {
           if(this.result_parser) {
             data = this.result_parser(data);
@@ -95,8 +95,8 @@ DFEDiagram.prototype.update = function(coords) {
     })
 };
 
-function setup_query_data() {
-    return $.extend({}, this.chemical_potential, this.comopund_formation_energy, this.query_data);
+function setup_query_data(_this) {
+    return $.extend({}, _this.chemical_potential, {"compound_formation_energy": _this.compound_formation_energy}, _this.query_data);
 }
 
 function setup_graph(data) {
