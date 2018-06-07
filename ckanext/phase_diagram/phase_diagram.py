@@ -152,6 +152,7 @@ class StabilityDiagram(object):
     # [-1 -0.5 -21]
     sub_eq_coeffs = np.array(coeffs) * -1
     sub_eq_coeffs = np.append(sub_eq_coeffs, [offset])
+    print 'sub_eq_coeff size', sub_eq_coeffs.size
     if orig_sub_coeff == 0:
       sub_eq_coeffs = np.zeros(sub_eq_coeffs.size)
     else:

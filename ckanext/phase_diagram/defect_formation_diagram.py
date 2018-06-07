@@ -65,16 +65,17 @@ class DefectFormationEnergyDiagram(object):
       pos_positions = [i for i, c in enumerate(charges) if c > 0]
       neg_positions = [i for i, c in enumerate(charges) if c < 0]
       A, b = self.get_equations(coefs_dfes)
-      pA, pb = A[pos_positions,:], b[pos_positions]
-      nA, nb = A[neg_positions,:], b[neg_positions]
-      pos[name] = (pA, pb)
-      neg[name] = (nA, nb)
+      inds = np.arange(len(charges))
+      pA, pb, pi = A[pos_positions,:], b[pos_positions], inds[pos_positions]
+      nA, nb, ni = A[neg_positions,:], b[neg_positions], inds[neg_positions]
+      pos[name] = (pA, pb, pi)
+      neg[name] = (nA, nb, ni)
     # Find intersections of lines
     intersections = []
     #pflat = [(name, eq) for name, value in pos.iteritems() for eq in value]
     #nflat = [(name, eq) for name, value in neg.iteritems() for eq in value]
-    pflat = [(name, i, (value[0][i], value[1][i])) for name, value in pos.iteritems() for i in range(len(value[0]))]
-    nflat = [(name, i, (value[0][i], value[1][i])) for name, value in neg.iteritems() for i in range(len(value[0]))]
+    pflat = [(name, value[2][i], (value[0][i], value[1][i])) for name, value in pos.iteritems() for i in range(len(value[0]))]
+    nflat = [(name, value[2][i], (value[0][i], value[1][i])) for name, value in neg.iteritems() for i in range(len(value[0]))]
     for pos_neg in itertools.product(pflat, nflat):
       ((pname, pi, peq), (nname, ni, neq)) = pos_neg
       try:
@@ -183,6 +184,7 @@ if __name__ == "__main__":
     [-0.0, -0.9],
     #[-0.4, -2.],
     [-0.3, -1.6],
+    [-0.15, -1.3]
   ]
   mu_cu, mu_in = points[-1]
   mu_cu, mu_in = -0.3, -1 # -0.5, -1.87
