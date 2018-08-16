@@ -8,6 +8,7 @@ from ckan.common import json
 
 import phase_diagram
 from defect_formation_diagram import DefectFormationEnergyDiagram
+from polyhedron import ConvexPolyhedron
 
 #log = getLogger(__name__)
 #ignore_empty = p.toolkit.get_validator('ignore_empty')
@@ -45,7 +46,7 @@ def phase_diagram_view(context, data_dict):
   # Example ["Cu", "In", "Se"]
   # TODO: , coords, be passed in by request
   # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
-  elements_nums = parse_ele_num(data_dict)
+  elements_nums = parse_nested_list("elements_nums", data_dict)
   elements = [en[0] for en in elements_nums]
   name = ""
   for ele, num in elements_nums:
@@ -69,18 +70,21 @@ def phase_diagram_view(context, data_dict):
       compound_hf = c.hf
       break
   specified_compounds = phase_diagram.select_compounds(compounds, elements)
-  specified_compound = filter(lambda c: str(c) == name, specified_compounds)
+  specified_compound = filter(lambda c: str(c) == name, specified_compounds)[0]
   lower_lims = [-3, -3]
   sd = phase_diagram.StabilityDiagram(specified_compound, specified_compounds, elements, lower_lims)
 
   regions = sd.get_regions()
-  regions = [{"formula": formula, "vertices": v.vertices.tolist()} for formula, v in regions.iteritems()]
+  regions_l = [{"formula": formula, "vertices": v.vertices.tolist()} for formula, v in regions.iteritems()]
+
+  print "Is compound of interest %s among regions %s" % (specified_compound, str(regions))
   #default_coord = {"x": (lower_lims[0] - 0) / 2.0,
   #                 "y": (lower_lims[1] - 0) / 2.0
   #                 }
   default_coord = {"x": -0.3,
                    "y": -1}
-  data = {"regions": regions,
+  data = {"regions": regions_l,
+          "relevant_region": regions[str(specified_compound)].vertices.tolist(),
           "bounds": [[-3, 0], [-3, 0]],
           "default_coord": default_coord,
           "x_label": "ΔμCu eV",
@@ -89,15 +93,24 @@ def phase_diagram_view(context, data_dict):
           }
   return data
 
-def parse_ele_num(data_dict):
+def parse_nested_list(key, data_dict, cast_to=None):
   # Parse the flattened list of lists flattened curtosy of CKAN's controller.api._get_request_data
-  elements_numbers = []
-  # elements[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
-  d_element_nums = filter(lambda x: x.startswith("elements_nums["), data_dict.keys())
-  for i in range(len(d_element_nums)):
-    ele_num = data_dict["elements_nums["+str(i)+"][]"]
-    elements_numbers.append((ele_num[0], int(ele_num[1])))
-  return elements_numbers
+  nested_list = []
+  # key[] bc CKAN controller.api._get_request_data flattens when not POST and side_effect_free. This is dumb.
+  d_lists = filter(lambda x: x.startswith(key+"["), data_dict.keys())
+  for i in range(len(d_lists)):
+    l = data_dict[key+"["+str(i)+"][]"]
+    if cast_to is None:
+      nested_list.append(l)
+    else:
+      l2 = []
+      for x in l:
+        try:
+          l2.append(cast_to(x))
+        except ValueError:
+          l2.append(x)
+      nested_list.append(l2)
+  return nested_list
 
 @tk.side_effect_free
 def defect_fect_formation_diagram_view(context, data_dict):
@@ -111,7 +124,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
   defaults_mu = [-0.7, -0.7]
   # TODO: use validator
   # Example, CuInSe2, mu1 -> Cu, mu2 -> In, mu3 -> Se2, c1=c2=1, c3=2
-  elements_numbers = parse_ele_num(data_dict)
+  elements_numbers = parse_nested_list("elements_nums", data_dict, int)
   # TODO: make this deal with when the unknown chemical isn't always the last
   chemical_potentials = [None]*len(elements_numbers)#["chemical_potentials[]"] # Does nothing rn
   compound_formation_energy = float(data_dict["compound_formation_energy"])
@@ -122,6 +135,17 @@ def defect_fect_formation_diagram_view(context, data_dict):
     #mus.append(mu)
   mu1 = float(data_dict.get("x", defaults_mu[0]))
   mu2 = float(data_dict.get("y", defaults_mu[1]))
+
+  # Only continue if the point was in the relevant region, 
+  # ie if phase diagram is for CuInSe2, only show dfe if click was in CuInSe2 region
+  if data_dict.get("only_relevant") == "true":
+    # Is in region?
+    relevant_region = parse_nested_list("relevant_region", data_dict, float)
+    region = ConvexPolyhedron(vertices=relevant_region)
+    is_relevant = region.is_interior((mu1, mu2))
+    if not is_relevant:
+      return {"status": 1,}
+
   mu3 = (compound_formation_energy - c[0]*mu1 - c[1]*mu2) / c[2]
   # example, mu_se = (-2.37 - mu_cu - mu_in) / 2
   chemical_potentials = [mu1, mu2, mu3]
@@ -139,6 +163,7 @@ def defect_fect_formation_diagram_view(context, data_dict):
           "intrinsic_fermi_level": ifl, #[x, y]
           "x_label": "Fermi energy [eV]",
           "y_label": "Formation energy [eV]",
+          "status": 0,
           }
   return data
 

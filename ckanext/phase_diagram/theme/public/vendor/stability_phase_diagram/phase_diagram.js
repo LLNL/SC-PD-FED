@@ -93,6 +93,7 @@ function setup(data) {
     var bounds = data.bounds;
     var all_regions = data.regions;
     var regions = feasible_regions(all_regions);
+    var relevant_region = data.relevant_region;
     var xScale = d3.scaleLinear().domain([bounds[0][0], bounds[0][1]]).range([0, width]);
     var yScale = d3.scaleLinear().domain([bounds[0][0], bounds[1][1]]).range([height, 0]);
 
@@ -202,10 +203,12 @@ function setup(data) {
         .attr("y", function(d) {return yScale(d.cy);})
         .attr("text-anchor", "middle").attr("class", "region_label");
 
+    // Check if click in relevant region if necessary
     // On click, get new dfe
     var _ = this;
     console.log(svg);
     polygon_g.on("click", function() {
+        var only_relevant = $("#only_relevant_dfe").prop("checked");
         var coords = d3.mouse(this);
         var inverted_coords = [
             xScale.invert(coords[0]),
@@ -213,7 +216,7 @@ function setup(data) {
         ];
         move_point(coords, cur_point_g, cur_point_text);
 
-        _.DFEDiagram.update(inverted_coords)
+        _.DFEDiagram.update(inverted_coords, only_relevant, relevant_region)
     });
 
 }

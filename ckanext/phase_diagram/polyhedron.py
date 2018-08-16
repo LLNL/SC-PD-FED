@@ -5,10 +5,15 @@ import numpy as np
 from numpy.linalg import LinAlgError
 from scipy.optimize import linprog
 from scipy.spatial.qhull import HalfspaceIntersection, QhullError
+from scipy.spatial import ConvexHull
 
 
 class ConvexPolyhedron(object):
   def __init__(self, vertices=None, halfspaces=None):#, bounded=True):
+    if vertices is not None:
+      vertices = np.array(vertices)
+    if halfspaces is not None:
+      halfspaces = np.array(halfspaces)
     if halfspaces is not None:
       self.halfspaces = halfspaces
       try:
@@ -28,10 +33,21 @@ class ConvexPolyhedron(object):
       self.vertices = vertices
       self.fromwhich = "vertices"
       # TODO: some check for convexity?
+    if self.vertices is not None and len(self.vertices):
+      self.hull = ConvexHull(self.vertices)
 
   def __repr__(self):
     s = "From {}\nVertices:\n{}\nHalfspaces:\n{}\n".format(self.fromwhich, self.vertices, self.halfspaces)
     return s
+
+  def is_interior(self, point):
+    # Return true if point is on or interior of region boundaries, using self.vertices as the region boundary, assuming convex
+    # Using self.hull.equations instead of self.halfspaces b/c self.halfspaces has those extra halfspaces inside
+    point = np.array(point)
+    tolerance = 1e-12
+    A = self.hull.equations[:, :-1]
+    b = self.hull.equations[:, -1]
+    return np.all(np.dot(A, point) + b <= tolerance) 
 
   @staticmethod
   def feasible_vertices(halfspaces):
@@ -63,6 +79,7 @@ class ConvexPolyhedron(object):
 
   @staticmethod
   def graham_scan(vertices):
+    """Use graham scan to order the vertices in ccw order"""
     # https://en.wikipedia.org/wiki/Graham_scan
     def ccw(p1, p2, p3):
       # Three points are a counter-clockwise turn if ccw > 0, clockwise if
@@ -121,7 +138,7 @@ class ConvexPolyhedron(object):
       raise Exception("< 3 vertices (of different polar angle)")
     output_v = [lowest_v, sorted_other_v[0], sorted_other_v[1]]
     for v in sorted_other_v[2:]:
-      if ccw(output_v[-2], output_v[-1], v) < 0: # clockwise
+      if ccw(output_v[-2], output_v[-1], v) <= 0: # clockwise
         del output_v[-1]
       output_v.append(v)
     return np.array(output_v)

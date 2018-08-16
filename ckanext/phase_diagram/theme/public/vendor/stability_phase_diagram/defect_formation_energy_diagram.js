@@ -73,8 +73,11 @@ DFEDiagram.prototype.init = function() {
     })
 };
 
-DFEDiagram.prototype.update = function(coords) {
+DFEDiagram.prototype.update = function(coords, only_relevant, relevant_region) {
+    // only_relevant: bool, relevant_region: halfspaces 
     this.chemical_potential = {"x": coords[0], "y": coords[1]};
+    var data = setup_query_data(this, {"only_relevant": only_relevant, "relevant_region": relevant_region});
+    console.log("data ", data);
     $.ajax({
         context: this,
         type: "GET",
@@ -82,12 +85,16 @@ DFEDiagram.prototype.update = function(coords) {
         dataType: "json",
         url: this.endpoint,
         async: true,
-        data: setup_query_data(this),
+        data: data,
         success: function(data) {
           if(this.result_parser) {
             data = this.result_parser(data);
           }
-          drawLines.call(this, data);
+          if(data["status"] == 0) {
+            drawLines.call(this, data);
+          } else {
+            reset_lines.call(this);
+          }
         },
         error: function(result){
             console.log("Ajax error: ", result)
@@ -95,8 +102,8 @@ DFEDiagram.prototype.update = function(coords) {
     })
 };
 
-function setup_query_data(_this) {
-    return $.extend({}, _this.chemical_potential, {"compound_formation_energy": _this.compound_formation_energy}, _this.query_data);
+function setup_query_data(_this, extras) {
+    return $.extend({}, _this.chemical_potential, {"compound_formation_energy": _this.compound_formation_energy}, _this.query_data, extras);
 }
 
 function setup_graph(data) {
