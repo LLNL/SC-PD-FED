@@ -9,8 +9,33 @@ function init_element_selects(select_div, data, default_values, endpoint, query_
             elements.push(ele);
             elements_nums.push([ele, num]);
         });
+        // Check that the selected values are allowed, IE we have resources named after it
+        function check_allowed() {
+          var material = $(select_div+" "+"#pd-material-type").find("option[selected]").attr("value");
+          var material_dict = get_material_dict(data, material);
+          var allowed = material_dict.allowed;
+          for(var i = 0; i < allowed.length; i++) {
+              var good = true;
+              var chem = allowed[i];
+              for(var j = 0; j < elements_nums.length; j++) {
+                  if(chem[elements_nums[0]] != elements_nums[1]){
+                      good = false;
+                      break;
+                  }
+              }
+              if(good){
+                  return true
+              }
+          }
+          return false
+        }
+        if(!check_allowed()) {
+            // Do not submit, show message
+            alert("No data found for selected compound. Check the resources of this dataset");
+            return
+        }
         var qd = {
-            material: $(select_div+" "+"#pd-material-type").find("option[selected]").attr("value"),
+            material: material,
             property: $(select_div+" "+"#pd-property").find("option[selected]").attr("value"),
             elements_nums: elements_nums
         };

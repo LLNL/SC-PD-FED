@@ -27,7 +27,7 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
             phase_diagram.init();
         }
         init_element_selects("#pd-elements",
-            this.options.elementConfigData.default_values,
+            this.options.elementConfigData.select_values,
             this.options.elementConfigData.default_selected_values,
             element_select_endpoint,
             {"package_id": this.options.packageId},
@@ -39,8 +39,9 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
         Object.assign(params.pd_params, {"width": w, "height": w});
         Object.assign(params.dfe_params, {"width": w, "height": w});
 
-        var phase_diagram = new PhaseDiagram(phase_div_id, dfe_div_id, pd_endpoint, dfe_endpoint, params, query_data, result_parser);
-        phase_diagram.init();
+        // var phase_diagram = new PhaseDiagram(phase_div_id, dfe_div_id, pd_endpoint, dfe_endpoint, params, query_data, result_parser);
+        // phase_diagram.init();
+        phase_diagram_init_using_query_data(query_data)
     }
     return {
         initialize: initialize

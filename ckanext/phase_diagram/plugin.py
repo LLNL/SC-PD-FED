@@ -179,6 +179,24 @@ def corresponding_resource_id(base_name, package):
 class ResourceNotFound(Exception):
   pass
 
+def resource_pair_names(package, num=None):
+  """Return (pd_resource_id, dfe_resource_id) of num or all the pairs in this package"""
+  name_id = {r["name"]: r["id"] for r in package["resources"]}
+  base_names = []
+  pairs = []
+  count = 0
+  for name, id in name_id.iteritems():
+    if name.endswith("_pd_data.csv") or name.endswith("_dfe_data.csv"):
+      base_name = name.rsplit("_pd_data.csv",1)[0].rsplit("_dfe_data.csv", 1)[0]
+      if base_name in base_names:
+        pairs.append(base_name)
+        if num:
+          count += 1
+          if count == num:
+            break
+      base_names.append(base_name)
+  return pairs
+
 def resource_pairs(package, num=None):
   """Return (pd_resource_id, dfe_resource_id) of num or all the pairs in this package"""
   name_id = {r["name"]: r["id"] for r in package["resources"]}
@@ -427,6 +445,13 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
           for ele, values in ele_values.iteritems():
             retv[pos[ele]].append({"text": ele, "values": range(values[0], values[1]+1)})
           return retv
+    def allowed_values(package):
+      """Look up the chems that are in the dataset"""
+      chems_with_data = resource_pair_names(package)
+      allowed_values = []
+      for chem in chems_with_data:
+        allowed_values.append(phase_diagram.Compound.parse_string_to_dict(chem))
+      return allowed_values
 
     possible_materials = ["chalcopyrite"]
     assert(material in possible_materials)
@@ -437,7 +462,8 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
         "material": "chalcopyrite",
         "text": "Chalcopyrite",
         "properties": properties,
-        "elements": format_elements(material, parse_stoich(get_rules(material)))
+        "elements": format_elements(material, parse_stoich(get_rules(material))),
+        "allowed": allowed_values(package)
       }
     return properties
 
@@ -462,7 +488,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
       "elements_nums": [("Cu", 1), ("In", 1), ("Se", 2),]
     }
     element_config_data = { "default_selected_values": default_selected_element_values,
-                           "default_values": element_select_values,
+                           "select_values": element_select_values,
                            }
 
     return {'resource_json': json.dumps(data_dict['resource']),
