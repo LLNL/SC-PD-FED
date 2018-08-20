@@ -178,19 +178,32 @@ def corresponding_resource_id(base_name, package):
 
 class ResourceNotFound(Exception):
   pass
-def first_resource_pair(package):
-  """Return (pd_resource_id, dfe_resource_id) of the first pair
-  of x_pd_data.csv, x_dfe_data.csv in package"""
+
+def resource_pairs(package, num=None):
+  """Return (pd_resource_id, dfe_resource_id) of num or all the pairs in this package"""
   name_id = {r["name"]: r["id"] for r in package["resources"]}
   base_names = []
+  pairs = []
+  count = 0
   for name, id in name_id.iteritems():
     if name.endswith("_pd_data.csv") or name.endswith("_dfe_data.csv"):
       base_name = name.rsplit("_pd_data.csv",1)[0].rsplit("_dfe_data.csv", 1)[0]
       if base_name in base_names:
-        return (name_id[base_name+"_pd_data.csv"], name_id[base_name+"_dfe_data.csv"])
+        pairs.append((name_id[base_name+"_pd_data.csv"], name_id[base_name+"_dfe_data.csv"]))
+        if num:
+          count += 1
+          if count == num:
+            break
       base_names.append(base_name)
-  raise ResourceNotFound
+  return pairs
 
+def first_resource_pair(package):
+  """Return (pd_resource_id, dfe_resource_id) of the first pair
+  of x_pd_data.csv, x_dfe_data.csv in package"""
+  first = resource_pairs(package, 1)
+  if not first:
+    raise ResourceNotFound
+  return first[0]
 
 class PhaseDiagramPlugin(p.SingletonPlugin):
   '''
@@ -239,7 +252,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
       pass
     def get_rules(material):
       """Get list of rules in stoichiometry.csv resource for material"""
-      stoich_resource = filter(lambda x: x.name == "stoichiometry.csv", package["resources"])[0]
+      stoich_resource = filter(lambda x: x["name"] == "stoichiometry.csv", package["resources"])[0]
       data = tk.get_action("datastore_search")(data_dict={"resource_id": stoich_resource["id"]})["records"]
       rules = []
       # Get rules
@@ -405,7 +418,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
                         "values": list(range(1, 3)),
                         },
                        ]
-                    ],
+                    ]
         return default
       else:
         if material == "chalcopyrite":
@@ -413,6 +426,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
           retv = [[], [], []]
           for ele, values in ele_values.iteritems():
             retv[pos[ele]].append({"text": ele, "values": range(values[0], values[1]+1)})
+          return retv
 
     possible_materials = ["chalcopyrite"]
     assert(material in possible_materials)
