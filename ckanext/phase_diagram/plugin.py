@@ -506,7 +506,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     return 'phase_diagram.html'
 
   def info(self):
-    return {'name': 'semiconductor_stability_phase_diagram_view',
+    return {'name': 'semiconductor_stability_phase_diagram_view_llnl_smc',
             'title': 'Semiconductor Stability Phase Diagram',
             'icon': 'eye-open',
             'requires_datastore': True,
@@ -530,8 +530,8 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
   # IActions
   def get_actions(self):
     actions = {
-      "semiconductor_phase_diagram": phase_diagram_view,
-      "semiconductor_dfe_diagram": defect_fect_formation_diagram_view,
-      "semiconductor_element_select": select_compound,
+      "semiconductor_phase_diagram_llnl_smc": phase_diagram_view,
+      "semiconductor_dfe_diagram_llnl_smc": defect_fect_formation_diagram_view,
+      "semiconductor_element_select_llnl_smc": select_compound,
     }
     return actions

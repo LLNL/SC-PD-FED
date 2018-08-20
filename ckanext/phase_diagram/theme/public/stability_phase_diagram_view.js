@@ -5,9 +5,9 @@ ckan.module('stability_phase_diagram_view', function(jQuery) {
         };
         var phase_div_id = "#phase-diagram",
             dfe_div_id = "#defect-formation-energy-diagram",
-            pd_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_phase_diagram'),
-            dfe_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_dfe_diagram'),
-            element_select_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_element_select');
+            pd_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_phase_diagram_llnl_smc'),
+            dfe_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_dfe_diagram_llnl_smc'),
+            element_select_endpoint = this.sandbox.client.url('/api/action/' + 'semiconductor_element_select_llnl_smc');
 
         var pdId = this.options.pdResourceId,
             dfeId = this.options.dfeResourceId;
