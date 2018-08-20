@@ -89,7 +89,8 @@ function create_property_select($property_select, data, selected_values) {
             $property_select.append($("<option>", {value:p[0], text:p[1], selected:"selected"}));
         }
         else {
-            $property_select.append($("<option>", {value:p[0], text:p[1]}));
+            // NOTE: Hardcoded, only formation energy is selectable
+            $property_select.append($("<option>", {value:p[0], text:p[1], disabled:"disabled"}));
         }
     }
 }

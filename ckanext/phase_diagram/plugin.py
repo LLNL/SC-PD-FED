@@ -5,6 +5,8 @@ from logging import getLogger
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan.common import json
+from collections import defaultdict
+import re
 
 import phase_diagram
 from defect_formation_diagram import DefectFormationEnergyDiagram
@@ -23,7 +25,7 @@ def select_compound(context, data_dict):
             "msg": "Only formation energy supported"}
     else:
       raise NotImplementedError()
-    elements_numbers = parse_ele_num(data_dict)
+    elements_numbers = parse_nested_list("elements_nums", data_dict)
     name = ""
     for ele, num in elements_numbers:
       num = int(num)
@@ -169,10 +171,26 @@ def defect_fect_formation_diagram_view(context, data_dict):
 
 def corresponding_resource_id(base_name, package):
   pd_name, dfe_name = (base_name+"_pd_data.csv", base_name+"_dfe_data.csv")
-  id_name = {r["name"]: r["id"] for r in package["resources"]}
-  pd_resource_id = id_name[pd_name]
-  dfe_resource_id = id_name[dfe_name]
+  name_id = {r["name"]: r["id"] for r in package["resources"]}
+  pd_resource_id = name_id[pd_name]
+  dfe_resource_id = name_id[dfe_name]
   return (pd_resource_id, dfe_resource_id)
+
+class ResourceNotFound(Exception):
+  pass
+def first_resource_pair(package):
+  """Return (pd_resource_id, dfe_resource_id) of the first pair
+  of x_pd_data.csv, x_dfe_data.csv in package"""
+  name_id = {r["name"]: r["id"] for r in package["resources"]}
+  base_names = []
+  for name, id in name_id.iteritems():
+    if name.endswith("_pd_data.csv") or name.endswith("_dfe_data.csv"):
+      base_name = name.rsplit("_pd_data.csv",1)[0].rsplit("_dfe_data.csv", 1)[0]
+      if base_name in base_names:
+        return (name_id[base_name+"_pd_data.csv"], name_id[base_name+"_dfe_data.csv"])
+      base_names.append(base_name)
+  raise ResourceNotFound
+
 
 class PhaseDiagramPlugin(p.SingletonPlugin):
   '''
@@ -216,35 +234,212 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     else:
       raise Exception("Material type selected invalid: " + material)
 
+  def setup_material_properties(self, material, package):
+    class BadRule(Exception):
+      pass
+    def get_rules(material):
+      """Get list of rules in stoichiometry.csv resource for material"""
+      stoich_resource = filter(lambda x: x.name == "stoichiometry.csv", package["resources"])[0]
+      data = tk.get_action("datastore_search")(data_dict={"resource_id": stoich_resource["id"]})["records"]
+      rules = []
+      # Get rules
+      for d in data:
+        if d["material"] == material:
+          rules.append(d["stoich"])
+      return rules
+    def parse_stoich(rules):
+      """Look for stoich rule in dataset's stoichiometry, get values each chem could be"""
+      # Example rules: Cu Ga_x In_1-x S_y Se_(2-y) where 0<=x<=1 ; 0<=y<=1
+      # Constraints must be either form of c1<=x<=c2, using either <= or <
+      def check_parens(s):
+        """Check there are no nested parens, and that all open and close parens have match, return True if good"""
+        saw_open = False
+        for c in s:
+          if c == "(":
+            if saw_open:
+              return False
+            saw_open = True
+          elif c == ")":
+            if not saw_open:
+              return False
+            saw_open = False
+        return not saw_open
+
+      delims = "(\<=|\>=|\<|\>)"
+      operators = ["<=", ">=", "<", ">"]
+      valid_operators = ["<=", "<"]
+      validated_element_values = defaultdict(lambda: [100,  -100])
+      try:
+        # Parse rules
+        for rule in rules:
+          try:
+            parts = map(lambda x: x.strip(), rule.split("where"))
+            if len(parts) != 2:
+              continue
+            # Get the elements and vars and
+            var_values = {} # The (min, max) values, inclusive
+            # Validate the constraints
+            for constraint in parts[1].split(";"):
+              saw_operator_last = True
+              constraint = constraint.strip()
+              tokens = re.split(delims, constraint)
+              if len(tokens) != 5:
+                raise BadRule()
+              var = ""
+              validated_tokens = []
+              for t in tokens:
+                t = t.strip()
+                # [int|alpha] must preceed and follow an operator
+                if saw_operator_last:
+                  if t in operators:
+                    raise BadRule()
+                  saw_operator_last = False
+                  try:
+                    # Check for integer, or alphabetical
+                    t = int(t)
+                    validated_tokens.append(t)
+                  except ValueError:
+                    if var:
+                      # This constraint has two variables; not simple, ignoring rule. Ex: 0<x<y<5
+                      raise BadRule()
+                    else:
+                      var = t
+                      validated_tokens.append(t)
+                else: # Should be an operator now
+                  if t in valid_operators:
+                    validated_tokens.append(t)
+                    saw_operator_last = True
+                  else:
+                    raise BadRule()
+              # Get the min and max values for the var
+              # Every odd token should be a comparison operator
+              if validated_tokens[1] == "<=":
+                min_v = validated_tokens[0]
+              else:
+                min_v = validated_tokens[0] + 1
+              if validated_tokens[3] == "<=":
+                max_v = validated_tokens[4]
+              else:
+                max_v = validated_tokens[4] - 1
+              var_values[var] = (min_v, max_v)
+
+            # Get the elements and min max values
+            element_values = {}
+            delims = "(-|\+)"
+            valid_operators = ["-", "+"]
+            for ele in parts[0].split():
+              try:
+                ele, stoich_rule = ele.split("_")
+                stoich_rule = stoich_rule.strip()
+                if check_parens(stoich_rule): # Check for good parens
+                  # If there was parens
+                  if stoich_rule[0] == "(":
+                    stoich_rule = stoich_rule[1:-1]
+              except ValueError:
+                if ele.isalpha():
+                  element_values[ele] = (1,1)
+                  continue
+                raise BadRule()
+              min_v = 0
+              max_v = 0
+              tokens = re.split(delims, stoich_rule)
+              # Validate, make sure integers and vars in constraints only
+              # And update the min/max value of element
+              vars_in_rule = []
+              for i, t in enumerate(tokens):
+                # If number/variable, look at sign before it
+                if t in valid_operators:
+                  continue
+                if i == 0:
+                  sign = 1
+                elif tokens[i-1] == "+":
+                  sign = 1
+                else:  # -
+                  sign = -1
+                if t in var_values.keys():
+                  vars_in_rule.append(t)
+                  # Use the min/max values of var to update min/max of element
+                  if sign == 1:
+                    min_v += var_values[t][0]
+                    max_v += var_values[t][1]
+                  else:
+                    min_v -= var_values[t][1]
+                    max_v -= var_values[t][0]
+                else:  # Check if int
+                  try:
+                    t = int(t)
+                    max_v += sign * t
+                    min_v += sign * t
+                  except ValueError:
+                    raise BadRule()
+              element_values[ele] = (min_v, max_v)
+            # If got here, that means this rule in dataset was ok
+            # Update the mins and max of this element
+            for ele, min_max in element_values.iteritems():
+              min0, max0 = validated_element_values[ele]
+              min1, max1 = min_max
+              validated_element_values[ele] = (min(min0, min1), max(max0, max1))
+          except BadRule:
+            continue
+        # Return formatted list of dicts, each entry in list corresponding to options in a select box
+        return validated_element_values
+      except IndexError:
+        return None
+    def format_elements(material, ele_values):
+      """Given {"Cu": [1,1], "Ga": [0,1]}, return a formatted list for web page. See code"""
+      if not ele_values:  # Return defaults
+        # stoich not found, return defaults
+        if material == "chalcopyrite":
+          default = [  # Keep a list of dicts so it's ordered?
+                      [{"text": "Cu",
+                        "values": [1]},
+                       ],
+                      [{"text": "In",
+                        "values": list(range(1, 3)),
+                        },
+                       {"text": "Ga",
+                        "values": list(range(1, 3)),
+                        }
+                       ],
+                      [{"text": "Se",
+                        "values": list(range(1, 3)),
+                        },
+                       ]
+                    ],
+        return default
+      else:
+        if material == "chalcopyrite":
+          pos = {"Cu": 0, "In": 1, "Ga": 1, "S": 2, "Se": 2} # The select to be shown in
+          retv = [[], [], []]
+          for ele, values in ele_values.iteritems():
+            retv[pos[ele]].append({"text": ele, "values": range(values[0], values[1]+1)})
+
+    possible_materials = ["chalcopyrite"]
+    assert(material in possible_materials)
+    properties = [("formation_energy", "Formation Energy"),
+                   ("band_edge_position", "Band Edge Position")]
+    if material == "chalcopyrite":
+      properties = {
+        "material": "chalcopyrite",
+        "text": "Chalcopyrite",
+        "properties": properties,
+        "elements": format_elements(material, parse_stoich(get_rules(material)))
+      }
+    return properties
+
   def setup_template_variables(self, context, data_dict):
     resource = data_dict["resource"]
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
-    base_name = resource["name"].split(" ",1)[0]
-    pd_resource_id, dfe_resource_id = corresponding_resource_id(base_name, package)
+    id_name = {r["name"]: r["id"] for r in package["resources"]}
+    # Pick the first "X_pd_data.csv, X_dfe_data.csv" resource pair
+    try:
+      pd_resource_id, dfe_resource_id = first_resource_pair(package)
+    except ResourceNotFound:
+      return {"msg": "No *_pd_data.csv, *_dfe_data.csv pair found"}
+
     element_select_values = {
       "materials": [
-        {
-          "material": "chalcopyrite",
-          "text": "Chalcopyrite",
-          "properties": [("formation_energy", "Formation Energy"), ("band_gap", "Band Gap")],
-          "elements": [
-            # Keep a list of dicts so it's ordered?
-            [{"text": "Cu",
-              "values": [1]},
-            ],
-            [{ "text": "In",
-              "values": list(range(1,3)),
-              },
-              { "text": "Ga",
-                "values": list(range(1,3)),
-              }
-            ],
-            [{ "text": "Se",
-              "values": list(range(1,3)),
-              },
-            ]
-          ],
-        }
+        self.setup_material_properties("chalcopyrite", package),
       ],
     }
     default_selected_element_values = {

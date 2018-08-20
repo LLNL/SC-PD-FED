@@ -312,7 +312,9 @@ def plot_regions(compound, compounds, axis, bounds):
   sd = StabilityDiagram(compound, compounds, axis, bounds)
   #sd.get_region(Compound.from_string("Cu 0"))
   regions = sd.get_regions()
-
+  rr = regions[str(compound)]
+  print rr.is_interior((-0.0, -0.34))
+  print rr.is_interior((-0.2, -0.1))
   import matplotlib.pyplot as plt
   fig = plt.figure()
   ax = fig.add_subplot('111', aspect='equal')
