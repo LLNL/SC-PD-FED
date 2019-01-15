@@ -528,7 +528,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
     # TODO: done?
     resource = data_dict['resource']
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
-    requirements = corresponding_resource_names(resource)
+    requirements = corresponding_resource_names(resource['name'])
     pkg_resources = map(lambda r: r['name'], package['resources'])
     valid = all(req in pkg_resources for req in requirements)
 
