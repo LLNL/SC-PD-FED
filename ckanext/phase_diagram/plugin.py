@@ -169,8 +169,12 @@ def defect_fect_formation_diagram_view(context, data_dict):
           }
   return data
 
+def corresponding_resource_names(resource_name):
+  pd_name, dfe_name = (resource_name+"_pd_data.csv", resource_name+"_dfe_data.csv")
+  return pd_name, dfe_name
+
 def corresponding_resource_id(base_name, package):
-  pd_name, dfe_name = (base_name+"_pd_data.csv", base_name+"_dfe_data.csv")
+  pd_name, dfe_name = corresponding_resource_names(base_name)
   name_id = {r["name"]: r["id"] for r in package["resources"]}
   pd_resource_id = name_id[pd_name]
   dfe_resource_id = name_id[dfe_name]
@@ -513,11 +517,18 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             }
 
   def can_view(self, data_dict):
-    # Return whether plugin can render a particular resource
+    """
+    Return whether plugin can render a particular resource
+    A resource X can show this view if it has corresponding X_pd_data.csv and X_dfe_data.csv files
+    :param data_dict: dict of resource you're looking at
+    :type data_dict: dict
+    :return:
+    :rtype: bool
+    """
     # TODO: done?
     resource = data_dict['resource']
     package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
-    requirements = self.corresponding_resource_names(resource)
+    requirements = corresponding_resource_names(resource)
     pkg_resources = map(lambda r: r['name'], package['resources'])
     valid = all(req in pkg_resources for req in requirements)
 
