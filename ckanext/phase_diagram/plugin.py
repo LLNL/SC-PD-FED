@@ -517,26 +517,32 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
             }
 
   def can_view(self, data_dict):
-    """
-    Return whether plugin can render a particular resource
-    A resource X can show this view if it has corresponding X_pd_data.csv and X_dfe_data.csv files
-    :param data_dict: dict of resource you're looking at
-    :type data_dict: dict
-    :return:
-    :rtype: bool
-    """
-    # TODO: done?
-    resource = data_dict['resource']
-    package = tk.get_action("package_show")(data_dict={"id": resource["package_id"]})
-    requirements = corresponding_resource_names(resource['name'])
-    pkg_resources = map(lambda r: r['name'], package['resources'])
-    valid = all(req in pkg_resources for req in requirements)
+    return True
 
-    #if (resource.get('datastore_active') or
-    #        '_datastore_only_resource' in resource.get('url', '')):
-    #  return True
-    #resource_format = resource.get('format', None)
-    return valid
+  def after_create(self, context, resource):
+    if resource.has_key('data_tool') and resource['data_tool'] == 'Semiconductor Stability Phase Diagram':
+      data_dict = {
+        'resource_id': resource['id'],
+        'title': 'Solar Cell Phase & Defect Formation Energy',
+        'view_type': 'semiconductor_stability_phase_diagram_view_llnl_smc'
+      }
+      tk.get_action('resource_view_create')(context, data_dict)
+
+    def after_update(self, context, resource):
+      if resource.has_key('data_tool') and resource['data_tool'] == 'Semiconductor Stability Phase Diagram':
+        resource_views = tk.get_action('resource_view_list')(context, resource)
+        result = False
+        for rv in resource_views:
+          print(rv)
+          if rv['view_type'] == 'semiconductor_stability_phase_diagram_view_llnl_smc':
+            result = True
+        if not result:
+          data_dict = {
+            'resource_id': resource['id'],
+            'title': 'Solar Cell Phase & Defect Formation Energy',
+            'view_type': 'semiconductor_stability_phase_diagram_view_llnl_smc'
+          }
+      tk.get_action('resource_view_create')(context, data_dict)
 
   # IActions
   def get_actions(self):
