@@ -233,6 +233,7 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
   '''
   p.implements(p.IConfigurer, inherit=True)
   p.implements(p.IResourceView, inherit=True)
+  p.implements(p.IResourceController, inherit=True)
   p.implements(p.IActions)
 
   def update_config(self, config):
@@ -528,21 +529,21 @@ class PhaseDiagramPlugin(p.SingletonPlugin):
       }
       tk.get_action('resource_view_create')(context, data_dict)
 
-    def after_update(self, context, resource):
-      if resource.has_key('data_tool') and resource['data_tool'] == 'Semiconductor Stability Phase Diagram':
-        resource_views = tk.get_action('resource_view_list')(context, resource)
-        result = False
-        for rv in resource_views:
-          print(rv)
-          if rv['view_type'] == 'semiconductor_stability_phase_diagram_view_llnl_smc':
-            result = True
-        if not result:
-          data_dict = {
-            'resource_id': resource['id'],
-            'title': 'Solar Cell Phase & Defect Formation Energy',
-            'view_type': 'semiconductor_stability_phase_diagram_view_llnl_smc'
-          }
-      tk.get_action('resource_view_create')(context, data_dict)
+  def after_update(self, context, resource):
+    if resource.has_key('data_tool') and resource['data_tool'] == 'Semiconductor Stability Phase Diagram':
+      resource_views = tk.get_action('resource_view_list')(context, resource)
+      result = False
+      for rv in resource_views:
+        print(rv)
+        if rv['view_type'] == 'semiconductor_stability_phase_diagram_view_llnl_smc':
+          result = True
+      if not result:
+        data_dict = {
+          'resource_id': resource['id'],
+          'title': 'Solar Cell Phase & Defect Formation Energy',
+          'view_type': 'semiconductor_stability_phase_diagram_view_llnl_smc'
+        }
+    tk.get_action('resource_view_create')(context, data_dict)
 
   # IActions
   def get_actions(self):
