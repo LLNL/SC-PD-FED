@@ -28,7 +28,7 @@ setup(
     author_email='''li54@llnl.gov''',
 
     # Choose your license
-    license='AGPL',
+    license='MIT',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
